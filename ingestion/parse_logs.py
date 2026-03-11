@@ -182,6 +182,8 @@ con = duckdb.connect(DB_PATH)
 con.register('df_events', df)
 con.execute('DROP TABLE IF EXISTS telemetry_events')
 con.execute('CREATE TABLE telemetry_events AS SELECT * FROM df_events')
+con.execute("CREATE INDEX idx_user_email ON telemetry_events(user_email)")
+con.execute("CREATE INDEX idx_ts ON telemetry_events(ts)")
 
 # load employees CSV and persist
 try:
