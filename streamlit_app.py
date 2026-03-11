@@ -14,8 +14,12 @@ def get_db_path() -> str:
 
 def load_tables():
     db = get_db_path()
+    if not os.path.exists(db):
+        return []
     with duckdb.connect(db) as c:
-        tables = [r[0] for r in c.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='main'").fetchall()]
+        tables = [r[0] for r in c.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema='main'"
+        ).fetchall()]
     return tables
 
 
@@ -246,7 +250,9 @@ def main():
 
     expanded_state = True if keep_open else False
     with st.expander("Custom SQL (run any query)", expanded=expanded_state):
-        custom_sql = st.text_area("SQL", value=st.session_state['custom_sql_text'], height=200, key='custom_sql_text')
+        # initialize session state above; pass the key only to avoid creating the widget with a default
+        # value while also setting it via the Session State API (which triggers a Streamlit warning).
+        custom_sql = st.text_area("SQL", height=200, key='custom_sql_text')
         if st.button("Run custom SQL"):
                 # Safety checks: only allow read-only SELECT queries and block dangerous keywords
                 def is_safe_sql(sql_text: str) -> tuple[bool, str]:
