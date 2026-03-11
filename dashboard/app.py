@@ -79,7 +79,7 @@ def main():
     emp_df = load_employees()
 
     st.markdown("## Overview")
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Events", len(events_df))
     c2.metric("Employees", len(emp_df))
     # total tokens if present
@@ -97,6 +97,57 @@ def main():
         except Exception:
             total_tokens = None
     c4.metric("Total tokens (sum)", int(total_tokens) if total_tokens is not None else "N/A")
+
+    if 'timestamp' in events_df.columns:
+        try:
+            # convert timestamp correctly (milliseconds or nanoseconds)
+            events_df['timestamp'] = pd.to_datetime(events_df['timestamp'], unit='ms')
+            
+            delta = events_df['timestamp'].max() - events_df['timestamp'].min()
+            start = events_df['timestamp'].min()
+            end = events_df['timestamp'].max()
+
+            # compute years, months, days
+            years = end.year - start.year
+            months = end.month - start.month
+            days = end.day - start.day
+            if days < 0:
+                months -= 1
+                # get days in previous month
+                import calendar
+                prev_month = (end.month - 1) if end.month > 1 else 12
+                prev_year = end.year if end.month > 1 else end.year - 1
+                days += calendar.monthrange(prev_year, prev_month)[1]
+            if months < 0:
+                years -= 1
+                months += 12
+
+            # hours, minutes, seconds
+            hours, remainder = divmod(delta.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+
+            # build compact string
+            total_duration_str = ""
+            if years > 0:
+                total_duration_str += f"{years}y "
+            if months > 0:
+                total_duration_str += f"{months}mo "
+            if days > 0:
+                total_duration_str += f"{days}d "
+            if hours > 0:
+                total_duration_str += f"{hours}h "
+            if minutes > 0:
+                total_duration_str += f"{minutes}m "
+            if seconds > 0:
+                total_duration_str += f"{seconds}s"
+
+            # fallback
+            total_duration_str = total_duration_str.strip() or "0s"
+
+        except Exception:
+            total_duration_str = "N/A"
+
+    c5.metric("Total Duration", total_duration_str)
 
     st.markdown("---")
 
