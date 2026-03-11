@@ -126,8 +126,22 @@ analytics-platform
 
 ---
 
+## Dependencies
+
+- Python 3.13 (tested)
+- All Python dependencies required to run this project are listed in `requirements.txt`.  
+You can install them using:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Development notes
 
 - Keep the top-level module docstring in `ingestion/parse_logs.py` up to date — it documents inputs, outputs, and side-effects.
 - If you update ingestion to create materialized tables, update the README and Streamlit queries to use them for better performance.
 
+
+### LLM Usage
+
+A detailed log of how AI tools were used in this project is available in the [`LLM_USAGE_LOG.md`](LLM_USAGE_LOG.md) file.  
