@@ -36,7 +36,8 @@ Note: the ingestion script reads from a data directory defined in `ingestion/par
 4. Start the Streamlit dashboard:
 
 ```bash
-streamlit run streamlit_app.py
+# recommended: run the app from the dashboard package
+streamlit run dashboard/app.py
 ```
 
 Open the local URL printed by Streamlit (usually http://localhost:8501).
@@ -47,7 +48,7 @@ Open the local URL printed by Streamlit (usually http://localhost:8501).
 
 - `data_generator/generate_fake_data.py` — creates a small set of telemetry JSONL and an `employees.csv` so you can exercise the ingestion and dashboard without real logs.
 - `ingestion/parse_logs.py` — reads the JSONL, normalizes nested fields (turns dotted keys into underscored columns), coerces numeric fields, computes `ts` (datetime) and `total_tokens`, and writes two DuckDB tables: `telemetry_events` and `employees` in `analytics.db`.
-- `streamlit_app.py` — interactive dashboard that reads aggregates from `analytics.db`, offers common pre-made queries and a safe custom-SQL editor (preview mode with LIMIT + cached results).
+- `dashboard/app.py` — interactive dashboard that reads aggregates from `analytics.db`, offers common pre-made queries and a safe custom-SQL editor (preview mode with LIMIT + cached results).
 
 ---
 
