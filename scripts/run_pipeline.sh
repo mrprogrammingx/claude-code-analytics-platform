@@ -43,7 +43,7 @@ if [ "$GENERATE" = true ]; then
   echo "Generating telemetry data..."
   (
     cd data_generator
-    python3 generate_fake_data.py --num-users 50 --num-sessions 2500 --days 32
+    python3 generate_fake_data.py --num-users 100 --num-sessions 5000 --days 60
   )
 else
   echo "Skipping data generation"
