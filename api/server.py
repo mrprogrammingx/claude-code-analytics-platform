@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 import duckdb
-
-DB_PATH = "analytics2.db"
+from app.config import DB_PATH
 
 app = FastAPI(title="Claude Telemetry Analytics API")
 

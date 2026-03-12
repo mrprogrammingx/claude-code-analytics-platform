@@ -23,7 +23,7 @@ Notes / assumptions:
 - Numeric casting is best-effort — invalid values become NULL.
 
 Quick usage:
-    python3 ingestion/parse_logs.py
+    python3 -m ingestion.parse_logs
 
 If you want to re-run on a larger dataset, consider:
 - Increasing available memory, or
@@ -33,13 +33,7 @@ If you want to re-run on a larger dataset, consider:
 import json
 import duckdb
 import pandas as pd
-
-
-DATA_DIR = "data_generator/output"
-LOG_PATH = f"{DATA_DIR}/telemetry_logs.jsonl"
-EMPLOYEE_PATH = f"{DATA_DIR}/employees.csv"
-DB_PATH = "analytics.db"
-CHUNK_SIZE = 10_000_000  # adjust based on memory
+from app.config import LOG_PATH, EMPLOYEE_PATH, DB_PATH, CHUNK_SIZE
 
 def safe_int(val):
     try:

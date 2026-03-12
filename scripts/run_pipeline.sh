@@ -50,8 +50,8 @@ else
 fi
 
 echo "Running ingestion pipeline..."
-python3 ingestion/parse_logs.py
+python3 -m ingestion.parse_logs
 
 echo "Starting analytics dashboard..."
 # use exec so the dashboard process inherits the PID (nice for ctrl-c)
-exec python3 -m streamlit run dashboard/app.py
+exec python3 -m streamlit run dashboard/main.py
