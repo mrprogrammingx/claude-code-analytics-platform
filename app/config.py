@@ -1,7 +1,7 @@
 # project_root/config.py
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 API_TITLE = "Claude Telemetry Analytics API"
 API_VERSION = "1.0.0"

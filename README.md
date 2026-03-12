@@ -105,6 +105,7 @@ analytics-platform
 │
 ├── analytics.db                 # DuckDB analytics database
 ├── requirements.txt             # Python dependencies
+├── requirements-dev.txt             # Python development dependencies
 ├── README.md                    # Project documentation
 └── LLM_USAGE_LOG.md             # (Optional) Log of AI tools and prompts used
 ```
@@ -154,6 +155,21 @@ http://localhost:8000/docs
 - If Streamlit segfaults or crashes intermittently, make sure the app is using short-lived DuckDB connections (the current `dashboard/main.py` uses read-only connections per query).
 
 ---
+### Code style
+
+This project uses:
+
+- **Black** for formatting
+- **Ruff** for linting
+- **isort** for import sorting
+
+Run formatting:
+
+```bash
+ruff check . --fix
+isort .
+black .
+```
 
 ## Dependencies
 

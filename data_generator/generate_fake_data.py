@@ -25,48 +25,78 @@ from datetime import datetime, timedelta, timezone
 MODELS = {
     "claude-haiku-4-5-20251001": {
         "weight": 362,
-        "avg_cost": 0.0033, "cost_std": 0.005,
-        "avg_duration_ms": 5330, "duration_std": 4000,
-        "avg_input_tokens": 860, "input_std": 1200,
-        "avg_output_tokens": 105, "output_std": 150,
-        "avg_cache_read": 7431, "cache_read_std": 15000,
-        "avg_cache_create": 941, "cache_create_std": 2000,
+        "avg_cost": 0.0033,
+        "cost_std": 0.005,
+        "avg_duration_ms": 5330,
+        "duration_std": 4000,
+        "avg_input_tokens": 860,
+        "input_std": 1200,
+        "avg_output_tokens": 105,
+        "output_std": 150,
+        "avg_cache_read": 7431,
+        "cache_read_std": 15000,
+        "avg_cache_create": 941,
+        "cache_create_std": 2000,
     },
     "claude-opus-4-6": {
         "weight": 203,
-        "avg_cost": 0.071, "cost_std": 0.08,
-        "avg_duration_ms": 10230, "duration_std": 8000,
-        "avg_input_tokens": 263, "input_std": 500,
-        "avg_output_tokens": 454, "output_std": 400,
-        "avg_cache_read": 73099, "cache_read_std": 50000,
-        "avg_cache_create": 3149, "cache_create_std": 5000,
+        "avg_cost": 0.071,
+        "cost_std": 0.08,
+        "avg_duration_ms": 10230,
+        "duration_std": 8000,
+        "avg_input_tokens": 263,
+        "input_std": 500,
+        "avg_output_tokens": 454,
+        "output_std": 400,
+        "avg_cache_read": 73099,
+        "cache_read_std": 50000,
+        "avg_cache_create": 3149,
+        "cache_create_std": 5000,
     },
     "claude-opus-4-5-20251101": {
         "weight": 185,
-        "avg_cost": 0.084, "cost_std": 0.09,
-        "avg_duration_ms": 10793, "duration_std": 8000,
-        "avg_input_tokens": 61, "input_std": 200,
-        "avg_output_tokens": 418, "output_std": 400,
-        "avg_cache_read": 76688, "cache_read_std": 50000,
-        "avg_cache_create": 5485, "cache_create_std": 8000,
+        "avg_cost": 0.084,
+        "cost_std": 0.09,
+        "avg_duration_ms": 10793,
+        "duration_std": 8000,
+        "avg_input_tokens": 61,
+        "input_std": 200,
+        "avg_output_tokens": 418,
+        "output_std": 400,
+        "avg_cache_read": 76688,
+        "cache_read_std": 50000,
+        "avg_cache_create": 5485,
+        "cache_create_std": 8000,
     },
     "claude-sonnet-4-5-20250929": {
         "weight": 155,
-        "avg_cost": 0.062, "cost_std": 0.07,
-        "avg_duration_ms": 11886, "duration_std": 9000,
-        "avg_input_tokens": 83, "input_std": 200,
-        "avg_output_tokens": 516, "output_std": 500,
-        "avg_cache_read": 68556, "cache_read_std": 50000,
-        "avg_cache_create": 6483, "cache_create_std": 8000,
+        "avg_cost": 0.062,
+        "cost_std": 0.07,
+        "avg_duration_ms": 11886,
+        "duration_std": 9000,
+        "avg_input_tokens": 83,
+        "input_std": 200,
+        "avg_output_tokens": 516,
+        "output_std": 500,
+        "avg_cache_read": 68556,
+        "cache_read_std": 50000,
+        "avg_cache_create": 6483,
+        "cache_create_std": 8000,
     },
     "claude-sonnet-4-6": {
         "weight": 21,
-        "avg_cost": 0.066, "cost_std": 0.07,
-        "avg_duration_ms": 9914, "duration_std": 8000,
-        "avg_input_tokens": 142, "input_std": 300,
-        "avg_output_tokens": 460, "output_std": 400,
-        "avg_cache_read": 70715, "cache_read_std": 50000,
-        "avg_cache_create": 2905, "cache_create_std": 5000,
+        "avg_cost": 0.066,
+        "cost_std": 0.07,
+        "avg_duration_ms": 9914,
+        "duration_std": 8000,
+        "avg_input_tokens": 142,
+        "input_std": 300,
+        "avg_output_tokens": 460,
+        "output_std": 400,
+        "avg_cache_read": 70715,
+        "cache_read_std": 50000,
+        "avg_cache_create": 2905,
+        "cache_create_std": 5000,
     },
 }
 
@@ -144,29 +174,58 @@ TOOL_AVG_DURATIONS = {
 # API error messages with weights
 API_ERRORS = [
     ("Request was aborted.", "undefined", 44),
-    ("This request would exceed your account's rate limit. Please try again later.", "429", 19),
+    (
+        "This request would exceed your account's rate limit. Please try again later.",
+        "429",
+        19,
+    ),
     ("output_config: Extra inputs are not permitted", "400", 6),
     ("Internal server error", "500", 4),
     ("tools: Tool names must be unique.", "400", 4),
     ("Could not load credentials from any providers", "undefined", 3),
-    ("OAuth token has expired. Please obtain a new token or refresh your existing token.", "401", 2),
+    (
+        "OAuth token has expired. Please obtain a new token or refresh your existing token.",
+        "401",
+        2,
+    ),
     ("400 The provided request is not valid", "400", 2),
 ]
 
 # Scope versions with weights
 SCOPE_VERSIONS = [
-    ("2.1.39", 159), ("2.1.50", 151), ("2.0.76", 121), ("2.1.37", 111),
-    ("2.1.45", 108), ("2.1.49", 79), ("2.1.42", 73), ("2.1.29", 69),
-    ("2.1.34", 68), ("2.1.47", 67), ("2.1.56", 64), ("2.1.31", 64),
-    ("2.1.12", 59), ("2.1.44", 59), ("2.1.2", 58), ("2.1.38", 54),
-    ("2.1.59", 54), ("2.1.19", 48), ("2.1.20", 47), ("2.1.41", 45),
+    ("2.1.39", 159),
+    ("2.1.50", 151),
+    ("2.0.76", 121),
+    ("2.1.37", 111),
+    ("2.1.45", 108),
+    ("2.1.49", 79),
+    ("2.1.42", 73),
+    ("2.1.29", 69),
+    ("2.1.34", 68),
+    ("2.1.47", 67),
+    ("2.1.56", 64),
+    ("2.1.31", 64),
+    ("2.1.12", 59),
+    ("2.1.44", 59),
+    ("2.1.2", 58),
+    ("2.1.38", 54),
+    ("2.1.59", 54),
+    ("2.1.19", 48),
+    ("2.1.20", 47),
+    ("2.1.41", 45),
 ]
 
 # Terminal types
 TERMINAL_TYPES = [
-    ("vscode", 40), ("pycharm", 20), ("WarpTerminal", 10),
-    ("webstorm", 8), ("iTerm2", 7), ("Terminal", 5),
-    ("intellij", 5), ("cursor", 3), ("goland", 2),
+    ("vscode", 40),
+    ("pycharm", 20),
+    ("WarpTerminal", 10),
+    ("webstorm", 8),
+    ("iTerm2", 7),
+    ("Terminal", 5),
+    ("intellij", 5),
+    ("cursor", 3),
+    ("goland", 2),
 ]
 
 # OS types
@@ -200,38 +259,99 @@ LOCATIONS = [
 
 # Levels L1-L10 with weights (bell curve around L4-L6)
 LEVELS = [
-    ("L1", 2), ("L2", 5), ("L3", 10), ("L4", 18), ("L5", 25),
-    ("L6", 20), ("L7", 10), ("L8", 5), ("L9", 3), ("L10", 2),
+    ("L1", 2),
+    ("L2", 5),
+    ("L3", 10),
+    ("L4", 18),
+    ("L5", 25),
+    ("L6", 20),
+    ("L7", 10),
+    ("L8", 5),
+    ("L9", 3),
+    ("L10", 2),
 ]
 
 FAKE_FIRST_NAMES = [
-    "alex", "jordan", "casey", "taylor", "morgan", "riley", "quinn",
-    "avery", "blake", "cameron", "drew", "emery", "frankie", "harper",
-    "jamie", "kai", "lennox", "max", "nico", "parker", "reese", "sage",
-    "sam", "skyler", "val", "west", "eden", "phoenix", "river", "rowan",
+    "alex",
+    "jordan",
+    "casey",
+    "taylor",
+    "morgan",
+    "riley",
+    "quinn",
+    "avery",
+    "blake",
+    "cameron",
+    "drew",
+    "emery",
+    "frankie",
+    "harper",
+    "jamie",
+    "kai",
+    "lennox",
+    "max",
+    "nico",
+    "parker",
+    "reese",
+    "sage",
+    "sam",
+    "skyler",
+    "val",
+    "west",
+    "eden",
+    "phoenix",
+    "river",
+    "rowan",
 ]
 
 FAKE_LAST_NAMES = [
-    "chen", "patel", "kim", "garcia", "smith", "johnson", "lee",
-    "williams", "brown", "jones", "davis", "wilson", "taylor", "martinez",
-    "anderson", "thomas", "jackson", "white", "harris", "clark",
+    "chen",
+    "patel",
+    "kim",
+    "garcia",
+    "smith",
+    "johnson",
+    "lee",
+    "williams",
+    "brown",
+    "jones",
+    "davis",
+    "wilson",
+    "taylor",
+    "martinez",
+    "anderson",
+    "thomas",
+    "jackson",
+    "white",
+    "harris",
+    "clark",
 ]
 
 FAKE_HOSTNAMES = [
-    "{name}s-MacBook-Pro.local", "{name}s-MacBook-Air.local",
-    "MacBookPro", "{name}-dev-machine", "{name}-workstation.local",
-    "dev-{name}.internal", "{name}-laptop",
+    "{name}s-MacBook-Pro.local",
+    "{name}s-MacBook-Air.local",
+    "MacBookPro",
+    "{name}-dev-machine",
+    "{name}-workstation.local",
+    "dev-{name}.internal",
+    "{name}-laptop",
 ]
 
 FAKE_PROFILES = [
-    "{first}", "{first}{last}", "{first}.{last}", "{first}_{last}",
-    "{first[0]}{last}", "{last}", "dev-{first}",
+    "{first}",
+    "{first}{last}",
+    "{first}.{last}",
+    "{first}_{last}",
+    "{first[0]}{last}",
+    "{last}",
+    "dev-{first}",
 ]
 
 
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
+
 
 def weighted_choice(items_with_weights):
     """Choose from list of (item, weight) tuples."""
@@ -268,10 +388,7 @@ def generate_fake_user(existing_emails):
     hostname = hostname_template.format(name=name)
 
     profile_template = random.choice(FAKE_PROFILES)
-    profile = profile_template.format(
-        first=first, last=last,
-        **{"first[0]": first[0]}
-    )
+    profile = profile_template.format(first=first, last=last, **{"first[0]": first[0]})
 
     serial = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=10))
 
@@ -331,7 +448,8 @@ def make_resource(user):
 def make_common_attributes(user, session_id, timestamp):
     """Build common attributes present in all events."""
     return {
-        "event.timestamp": timestamp.strftime("%Y-%m-%dT%H:%M:%S.") + f"{timestamp.microsecond // 1000:03d}Z",
+        "event.timestamp": timestamp.strftime("%Y-%m-%dT%H:%M:%S.")
+        + f"{timestamp.microsecond // 1000:03d}Z",
         "organization.id": user["org_id"],
         "session.id": session_id,
         "terminal.type": user["terminal"],
@@ -346,24 +464,36 @@ def generate_api_request_event(user, session_id, timestamp):
     model_name = weighted_choice([(m, d["weight"]) for m, d in MODELS.items()])
     model = MODELS[model_name]
 
-    input_tokens = max(0, int(positive_normal(model["avg_input_tokens"], model["input_std"])))
-    output_tokens = max(1, int(positive_normal(model["avg_output_tokens"], model["output_std"])))
-    cache_read = max(0, int(positive_normal(model["avg_cache_read"], model["cache_read_std"])))
-    cache_create = max(0, int(positive_normal(model["avg_cache_create"], model["cache_create_std"])))
+    input_tokens = max(
+        0, int(positive_normal(model["avg_input_tokens"], model["input_std"]))
+    )
+    output_tokens = max(
+        1, int(positive_normal(model["avg_output_tokens"], model["output_std"]))
+    )
+    cache_read = max(
+        0, int(positive_normal(model["avg_cache_read"], model["cache_read_std"]))
+    )
+    cache_create = max(
+        0, int(positive_normal(model["avg_cache_create"], model["cache_create_std"]))
+    )
     cost = max(0, positive_normal(model["avg_cost"], model["cost_std"]))
-    duration = max(100, int(positive_normal(model["avg_duration_ms"], model["duration_std"])))
+    duration = max(
+        100, int(positive_normal(model["avg_duration_ms"], model["duration_std"]))
+    )
 
     attrs = make_common_attributes(user, session_id, timestamp)
-    attrs.update({
-        "event.name": "api_request",
-        "cache_creation_tokens": str(cache_create),
-        "cache_read_tokens": str(cache_read),
-        "cost_usd": str(cost),
-        "duration_ms": str(duration),
-        "input_tokens": str(input_tokens),
-        "model": model_name,
-        "output_tokens": str(output_tokens),
-    })
+    attrs.update(
+        {
+            "event.name": "api_request",
+            "cache_creation_tokens": str(cache_create),
+            "cache_read_tokens": str(cache_read),
+            "cost_usd": str(cost),
+            "duration_ms": str(duration),
+            "input_tokens": str(input_tokens),
+            "model": model_name,
+            "output_tokens": str(output_tokens),
+        }
+    )
 
     return {
         "body": "claude_code.api_request",
@@ -382,12 +512,14 @@ def generate_tool_decision_event(user, session_id, timestamp, tool_name=None):
     decision = "reject" if source == "user_reject" else "accept"
 
     attrs = make_common_attributes(user, session_id, timestamp)
-    attrs.update({
-        "event.name": "tool_decision",
-        "decision": decision,
-        "source": source,
-        "tool_name": tool_name,
-    })
+    attrs.update(
+        {
+            "event.name": "tool_decision",
+            "decision": decision,
+            "source": source,
+            "tool_name": tool_name,
+        }
+    )
 
     return {
         "body": "claude_code.tool_decision",
@@ -397,7 +529,9 @@ def generate_tool_decision_event(user, session_id, timestamp, tool_name=None):
     }
 
 
-def generate_tool_result_event(user, session_id, timestamp, tool_name=None, decision_accepted=True):
+def generate_tool_result_event(
+    user, session_id, timestamp, tool_name=None, decision_accepted=True
+):
     """Generate a claude_code.tool_result event."""
     if tool_name is None:
         tool_name = weighted_choice([(t, w) for t, w in TOOLS.items()])
@@ -409,14 +543,16 @@ def generate_tool_result_event(user, session_id, timestamp, tool_name=None, deci
     duration = max(0, int(positive_normal(avg_dur, avg_dur * 0.8)))
 
     attrs = make_common_attributes(user, session_id, timestamp)
-    attrs.update({
-        "event.name": "tool_result",
-        "decision_source": "config" if decision_accepted else "user_reject",
-        "decision_type": "accept" if decision_accepted else "reject",
-        "duration_ms": str(duration),
-        "success": str(success).lower(),
-        "tool_name": tool_name,
-    })
+    attrs.update(
+        {
+            "event.name": "tool_result",
+            "decision_source": "config" if decision_accepted else "user_reject",
+            "decision_type": "accept" if decision_accepted else "reject",
+            "duration_ms": str(duration),
+            "success": str(success).lower(),
+            "tool_name": tool_name,
+        }
+    )
 
     # Optionally add tool_result_size_bytes
     if random.random() < 0.3:
@@ -436,11 +572,13 @@ def generate_user_prompt_event(user, session_id, timestamp):
     prompt_length = max(1, int(random.lognormvariate(4.85, 1.8)))
 
     attrs = make_common_attributes(user, session_id, timestamp)
-    attrs.update({
-        "event.name": "user_prompt",
-        "prompt": "<REDACTED>",
-        "prompt_length": str(prompt_length),
-    })
+    attrs.update(
+        {
+            "event.name": "user_prompt",
+            "prompt": "<REDACTED>",
+            "prompt_length": str(prompt_length),
+        }
+    )
 
     return {
         "body": "claude_code.user_prompt",
@@ -460,14 +598,16 @@ def generate_api_error_event(user, session_id, timestamp):
     attempt = random.choices([1, 2, 3], weights=[70, 20, 10], k=1)[0]
 
     attrs = make_common_attributes(user, session_id, timestamp)
-    attrs.update({
-        "event.name": "api_error",
-        "attempt": str(attempt),
-        "duration_ms": str(duration),
-        "error": error_msg,
-        "model": model_name,
-        "status_code": status_code,
-    })
+    attrs.update(
+        {
+            "event.name": "api_error",
+            "attempt": str(attempt),
+            "duration_ms": str(duration),
+            "error": error_msg,
+            "model": model_name,
+            "status_code": status_code,
+        }
+    )
 
     return {
         "body": "claude_code.api_error",
@@ -556,21 +696,25 @@ def events_to_log_batches(events, batch_size_range=(1, 10)):
     i = 0
     while i < len(events):
         batch_size = random.randint(*batch_size_range)
-        batch_events = events[i:i + batch_size]
+        batch_events = events[i : i + batch_size]
         i += batch_size
 
         logevents = []
         for event in batch_events:
             ts = event["attributes"]["event.timestamp"]
             # Parse the timestamp back to epoch ms
-            dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
+            dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+                tzinfo=timezone.utc
+            )
             epoch_ms = int(dt.timestamp() * 1000)
 
-            logevents.append({
-                "id": str(random.randint(10**55, 10**57)),
-                "timestamp": epoch_ms,
-                "message": json.dumps(event),
-            })
+            logevents.append(
+                {
+                    "id": str(random.randint(10**55, 10**57)),
+                    "timestamp": epoch_ms,
+                    "message": json.dumps(event),
+                }
+            )
 
         if logevents:
             # Use the first event's timestamp for partitioning
@@ -594,9 +738,15 @@ def events_to_log_batches(events, batch_size_range=(1, 10)):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate fake Claude Code telemetry data")
-    parser.add_argument("--num-users", type=int, default=30, help="Number of fake users")
-    parser.add_argument("--num-sessions", type=int, default=500, help="Total number of sessions")
+    parser = argparse.ArgumentParser(
+        description="Generate fake Claude Code telemetry data"
+    )
+    parser.add_argument(
+        "--num-users", type=int, default=30, help="Number of fake users"
+    )
+    parser.add_argument(
+        "--num-sessions", type=int, default=500, help="Total number of sessions"
+    )
     parser.add_argument("--days", type=int, default=30, help="Number of days to span")
     parser.add_argument("--output-dir", default="output", help="Output directory")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
@@ -604,7 +754,7 @@ def main():
 
     random.seed(args.seed)
 
-    print(f"Generating fake telemetry data...")
+    print("Generating fake telemetry data...")
     print(f"  Users: {args.num_users}")
     print(f"  Sessions: {args.num_sessions}")
     print(f"  Days: {args.days}")
@@ -637,13 +787,17 @@ def main():
         else:
             hour = random.randint(0, 23)
         minute = random.randint(0, 59)
-        session_start = session_day.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        session_start = session_day.replace(
+            hour=hour, minute=minute, second=0, microsecond=0
+        )
 
         events = generate_session_events(user, session_id, session_start)
         all_events.extend(events)
 
         if (session_num + 1) % 100 == 0:
-            print(f"  Generated session {session_num + 1}/{args.num_sessions} ({len(all_events)} events so far)")
+            print(
+                f"  Generated session {session_num + 1}/{args.num_sessions} ({len(all_events)} events so far)"
+            )
 
     print(f"  Total events generated: {len(all_events)}")
 
@@ -669,11 +823,13 @@ def main():
     with open(emp_path, "w") as f:
         f.write("email,full_name,practice,level,location\n")
         for user in users:
-            f.write(f"{user['email']},{user['full_name']},{user['practice']},{user['level']},{user['location']}\n")
+            f.write(
+                f"{user['email']},{user['full_name']},{user['practice']},{user['level']},{user['location']}\n"
+            )
     print(f"  Written to {emp_path}")
 
     # Print summary stats
-    print(f"\n=== Summary ===")
+    print("\n=== Summary ===")
     event_counts = {}
     for e in all_events:
         body = e["body"]
