@@ -1,13 +1,13 @@
 import logging
+from decimal import Decimal
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
 import duckdb
 import numpy as np
 import pandas as pd
-from decimal import Decimal
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from app.config import DB_PATH
@@ -68,11 +68,14 @@ def exec_query(sql: str, params: Optional[List[Any]] = None, to_dict: bool = Tru
 
             res = res.applymap(_to_py)
         except Exception:
-            logger.exception("Failed to fully sanitize DataFrame values; proceeding with best-effort conversion")
+            logger.exception(
+                "Failed to fully sanitize DataFrame values; proceeding with best-effort conversion"
+            )
 
         records = res.to_dict(orient="records")
 
-        # final recursive sanitizer to ensure JSON compliance (remove inf/-inf, convert non-serializable)
+        # final recursive sanitizer to ensure JSON compliance (remove inf/-inf,
+        # convert non-serializable)
         def _sanitize_value(v):
             # None
             if v is None:

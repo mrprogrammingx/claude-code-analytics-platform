@@ -35,11 +35,11 @@ If you want to re-run on a larger dataset, consider:
 - Processing the JSONL in streamed/batched chunks and appending to DuckDB incrementally.
 """
 
+import argparse
 import json
 
 import duckdb
 import pandas as pd
-import argparse
 
 from app.config import CHUNK_SIZE, DB_PATH, EMPLOYEE_PATH, LOG_PATH, TABLE_NAMES
 
@@ -63,7 +63,6 @@ def normalize_key(k: str) -> str:
     if not isinstance(k, str):
         return str(k)
     return k.replace(".", "_")
-
 
 
 def process_chunk(chunk_events):
@@ -193,7 +192,9 @@ def ingest(log_path: str, employee_path: str, db_path: str, chunk_size: int):
 
                     if count == 0:
                         # Create table with the first chunk
-                        con.execute(f"CREATE TABLE {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk")
+                        con.execute(
+                            f"CREATE TABLE {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk"
+                        )
                         # Get table columns for later chunks
                         table_cols = [
                             c[0]
@@ -209,7 +210,9 @@ def ingest(log_path: str, employee_path: str, db_path: str, chunk_size: int):
                         # Reorder columns to match table
                         df_chunk = df_chunk[table_cols]
                         con.register("df_chunk", df_chunk)
-                        con.execute(f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk")
+                        con.execute(
+                            f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk"
+                        )
 
                     count += len(df_chunk)
                     buffer = []
@@ -221,7 +224,8 @@ def ingest(log_path: str, employee_path: str, db_path: str, chunk_size: int):
                 con.register("df_chunk", df_chunk)
                 if count == 0:
                     con.execute(
-                        f"CREATE TABLE IF NOT EXISTS {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk"
+                        f"CREATE TABLE IF NOT EXISTS {TABLE_NAMES['telemetry']} AS "
+                        "SELECT * FROM df_chunk"
                     )
                     table_cols = [
                         c[0]
@@ -241,7 +245,10 @@ def ingest(log_path: str, employee_path: str, db_path: str, chunk_size: int):
         print(f"Inserted total {count} events.")
 
         # create indexes
-        con.execute(f"CREATE INDEX IF NOT EXISTS idx_user_email ON {TABLE_NAMES['telemetry']}(user_email)")
+        con.execute(
+            f"CREATE INDEX IF NOT EXISTS idx_user_email ON "
+            f"{TABLE_NAMES['telemetry']}(user_email)"
+        )
         con.execute(f"CREATE INDEX IF NOT EXISTS idx_ts ON {TABLE_NAMES['telemetry']}(ts)")
 
         # load employees CSV and persist
@@ -264,7 +271,9 @@ def main():
     parser.add_argument("--log-path", default=LOG_PATH, help="Path to telemetry JSONL file")
     parser.add_argument("--employee-path", default=EMPLOYEE_PATH, help="Path to employees CSV")
     parser.add_argument("--db-path", default=DB_PATH, help="Path to DuckDB file")
-    parser.add_argument("--chunk-size", type=int, default=CHUNK_SIZE, help="Chunk size for processing")
+    parser.add_argument(
+        "--chunk-size", type=int, default=CHUNK_SIZE, help="Chunk size for processing"
+    )
     args = parser.parse_args()
 
     ingest(args.log_path, args.employee_path, args.db_path, args.chunk_size)

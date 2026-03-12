@@ -22,13 +22,21 @@ DEFAULT_EVENT_LIMIT = 100
 
 CHUNK_SIZE = 10_000_000  # adjust based on memory
 
-TABLE_NAMES = {
-    "telemetry": "telemetry_events",
-    "employees": "employees"
-}
+TABLE_NAMES = {"telemetry": "telemetry_events", "employees": "employees"}
 
 DANGEROUS_SQL_KEYWORDS = [
-    "insert", "update", "delete", "drop", "alter", "create",
-    "replace", "truncate", "attach", "detach", "pragma", "copy",
-    "vacuum", "shutdown"
+    "insert",
+    "update",
+    "delete",
+    "drop",
+    "alter",
+    "create",
+    "replace",
+    "truncate",
+    "attach",
+    "detach",
+    "pragma",
+    "copy",
+    "vacuum",
+    "shutdown",
 ]

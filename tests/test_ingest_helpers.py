@@ -1,17 +1,20 @@
+import importlib
 import json
 import math
 import os
 import sys
 
-# Ensure project root is on sys.path so tests can import local packages
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
 
-from ingestion import parse_logs as pl
+def _load_parse_logs():
+    # Ensure project root is on sys.path so tests can import local packages
+    ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if ROOT not in sys.path:
+        sys.path.insert(0, ROOT)
+    return importlib.import_module("ingestion.parse_logs")
 
 
 def test_safe_int():
+    pl = _load_parse_logs()
     assert pl.safe_int("123") == 123
     assert pl.safe_int(5) == 5
     assert pl.safe_int("not-an-int") is None
@@ -19,8 +22,10 @@ def test_safe_int():
 
 
 def test_safe_float():
+    pl = _load_parse_logs()
     assert math.isclose(pl.safe_float("1.23"), 1.23)
-    # valid float string like 'nan' becomes a float('nan') which is not finite; safe_float returns float('nan')
+    # valid float string like 'nan' becomes a float('nan') which is not finite;
+    # safe_float returns float('nan')
     nan_val = pl.safe_float("nan")
     assert isinstance(nan_val, float)
     assert math.isnan(nan_val)
@@ -29,11 +34,13 @@ def test_safe_float():
 
 
 def test_normalize_key():
+    pl = _load_parse_logs()
     assert pl.normalize_key("user.email") == "user_email"
     assert pl.normalize_key(123) == "123"
 
 
 def test_process_chunk_minimal():
+    pl = _load_parse_logs()
     # Create a minimal record that matches expected structure
     record = {
         "logEvents": [
