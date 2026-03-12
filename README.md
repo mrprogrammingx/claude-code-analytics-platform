@@ -31,11 +31,12 @@ If the sample data already exists and you only want to ingest + start the dashbo
 
 ### Populate the DuckDB analytics database by running the ingestion script:
 ```bash
+# Run the pipeline but skip data generation (use existing data in data_generator/output)
 bash scripts/run_pipeline.sh --no-generate
 ```
-Or
+Or run the ingestion step directly with explicit paths:
 ```bash
-bash scripts/run_pipeline.sh
+python3 -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
 ```
 
 Note: the ingestion script reads from a data directory defined in `ingestion/parse_logs.py` (default: `data_generator/output`). The generator creates that output folder and files automatically, so there's no need to copy files between directories.
