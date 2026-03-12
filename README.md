@@ -84,22 +84,26 @@ Open the local URL printed by Streamlit (usually http://localhost:8501).
 ```
 analytics-platform
 │
+├── api
+│   └── server.py                # FastAPI service exposing analytics endpoints
+│
 ├── data_generator
-│   ├── generate_fake_data.py
-│   └── output/
+│   ├── generate_fake_data.py    # Generates simulated telemetry data
+│   └── output/                  # Generated JSONL logs and employees CSV
 │
 ├── ingestion
-│   └── parse_logs.py
+│   └── parse_logs.py            # Parses telemetry logs and loads DuckDB
 │
 ├── dashboard
-│   └── app.py
+│   └── app.py                   # Streamlit analytics dashboard
 │
 ├── scripts
-│   └── run_pipeline.sh
+│   └── run_pipeline.sh          # Runs full pipeline (generate → ingest)
 │
-├── analytics.db
-├── requirements.txt
-└── README.md
+├── analytics.db                 # DuckDB analytics database
+├── requirements.txt             # Python dependencies
+├── README.md                    # Project documentation
+└── LLM_USAGE_LOG.md             # (Optional) Log of AI tools and prompts used
 ```
 
 ## What each piece does
@@ -108,7 +112,27 @@ analytics-platform
 - `ingestion/parse_logs.py` — reads the JSONL, normalizes nested fields (turns dotted keys into underscored columns), coerces numeric fields, computes `ts` (datetime) and `total_tokens`, and writes two DuckDB tables: `telemetry_events` and `employees` in `analytics.db`.
 - `dashboard/app.py` — interactive dashboard that reads aggregates from `analytics.db`, offers common pre-made queries and a safe custom-SQL editor (preview mode with LIMIT + cached results).
 - `scripts/run_pipeline.sh` — convenience pipeline script that orchestrates the full workflow: optionally generates fake telemetry data, runs the ingestion script to populate `analytics.db`, and launches the Streamlit dashboard.
+- `scripts/run_pipeline.sh` — The platform also exposes a lightweight REST API for programmatic access to the analytics data.
+
 ---
+
+## API Access
+
+The platform also exposes a lightweight REST API for programmatic access to the analytics data.
+
+Run:
+
+uvicorn api.server:app --reload
+
+Available endpoints:
+
+GET /events — recent telemetry events  
+GET /metrics — aggregated platform metrics  
+GET /users — top users by token usage
+GET /analytics/peak-hours - Peak hours for events
+Interactive documentation is available at:
+
+http://localhost:8000/docs
 
 ## Tips for speed & stability
 
