@@ -1,16 +1,19 @@
 import duckdb
 from fastapi import FastAPI
-
 from app.config import DB_PATH
 
 app = FastAPI(title="Claude Telemetry Analytics API")
 
 
-def query(sql):
+def query(sql, to_dict=True):
     con = duckdb.connect(DB_PATH, read_only=True)
-    df = con.execute(sql).df()
+    df = con.execute(sql).fetchdf()
     con.close()
-    return df.to_dict(orient="records")
+    
+    if to_dict:
+        return df.to_dict(orient="records")
+    
+    return df
 
 
 @app.get("/")
@@ -70,3 +73,8 @@ def peak_hours_dashboard():
         ORDER BY hour
     """
     )
+
+@app.get("/telemetry")
+def get_telemetry(limit: int = 100):
+    df = query(f"SELECT * FROM telemetry_events LIMIT {limit}", to_dict=False)
+    return df.to_json(orient="records")
