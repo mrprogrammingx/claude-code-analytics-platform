@@ -8,18 +8,23 @@ Responsibilities:
 - Persist structured data into a DuckDB file for analytics.
 
 Inputs:
-- LOG_PATH (default: data_generator/output/telemetry_logs.jsonl) — JSONL of raw log records.
-- EMPLOYEE_PATH (default: data_generator/output/employees.csv) — optional employees CSV.
+- LOG_PATH (default: data_generator/output/telemetry_logs.jsonl) —
+JSONL of raw log records.
+- EMPLOYEE_PATH (default: data_generator/output/employees.csv) —
+optional employees CSV.
 
 Outputs / Side effects:
-- Writes/overwrites `telemetry_events` and (optionally) `employees` tables into analytics.db (DuckDB file).
+- Writes/overwrites `telemetry_events`
+and (optionally) `employees` tables into analytics.db (DuckDB file).
 
 Dependencies:
 - pandas, duckdb, json (standard lib)
 
 Notes / assumptions:
-- This script loads events into memory; for very large inputs you should switch to a streaming/batched approach.
-- The script expects `event['message']` to often be a JSON-encoded string; it handles both string and dict forms.
+- This script loads events into memory;
+for very large inputs you should switch to a streaming/batched approach.
+- The script expects `event['message']` to often be a JSON-encoded string;
+it handles both string and dict forms.
 - Numeric casting is best-effort — invalid values become NULL.
 
 Quick usage:
@@ -158,9 +163,7 @@ def process_chunk(chunk_events):
     df_chunk = pd.DataFrame(processed)
     if not df_chunk.empty:
         # add datetime and total_tokens
-        df_chunk["ts"] = pd.to_datetime(
-            df_chunk["timestamp"], unit="ms", errors="coerce"
-        )
+        df_chunk["ts"] = pd.to_datetime(df_chunk["timestamp"], unit="ms", errors="coerce")
         df_chunk["total_tokens"] = df_chunk["input_tokens"].fillna(0) + df_chunk[
             "output_tokens"
         ].fillna(0)
@@ -182,10 +185,7 @@ with open(LOG_PATH) as f:
                 con.execute("CREATE TABLE telemetry_events AS SELECT * FROM df_chunk")
                 # Get table columns for later chunks
                 table_cols = [
-                    c[0]
-                    for c in con.execute(
-                        "PRAGMA table_info('telemetry_events')"
-                    ).fetchall()
+                    c[0] for c in con.execute("PRAGMA table_info('telemetry_events')").fetchall()
                 ]
             else:
                 # Make sure df_chunk has all columns (fill missing with NULL)
@@ -202,9 +202,7 @@ with open(LOG_PATH) as f:
 if buffer:
     df_chunk = process_chunk(buffer)
     (
-        con.execute(
-            "CREATE TABLE IF NOT EXISTS telemetry_events AS SELECT * FROM df_chunk"
-        )
+        con.execute("CREATE TABLE IF NOT EXISTS telemetry_events AS SELECT * FROM df_chunk")
         if count == 0
         else con.execute("INSERT INTO telemetry_events SELECT * FROM df_chunk")
     )
@@ -225,9 +223,7 @@ try:
     con.execute("CREATE TABLE employees AS SELECT * FROM df_employees")
     print(f"Loaded employees.csv with {len(employees_df)} rows")
 except FileNotFoundError:
-    print(
-        f"employees.csv not found at {EMPLOYEE_PATH}; skipping employees table creation"
-    )
+    print(f"employees.csv not found at {EMPLOYEE_PATH}; skipping employees table creation")
 except Exception as e:
     print(f"Error loading employees.csv: {e}")
 

@@ -184,7 +184,7 @@ API_ERRORS = [
     ("tools: Tool names must be unique.", "400", 4),
     ("Could not load credentials from any providers", "undefined", 3),
     (
-        "OAuth token has expired. Please obtain a new token or refresh your existing token.",
+        "OAuth token has expired. " "Please obtain a new token or refresh your existing token.",
         "401",
         2,
     ),
@@ -464,22 +464,14 @@ def generate_api_request_event(user, session_id, timestamp):
     model_name = weighted_choice([(m, d["weight"]) for m, d in MODELS.items()])
     model = MODELS[model_name]
 
-    input_tokens = max(
-        0, int(positive_normal(model["avg_input_tokens"], model["input_std"]))
-    )
-    output_tokens = max(
-        1, int(positive_normal(model["avg_output_tokens"], model["output_std"]))
-    )
-    cache_read = max(
-        0, int(positive_normal(model["avg_cache_read"], model["cache_read_std"]))
-    )
+    input_tokens = max(0, int(positive_normal(model["avg_input_tokens"], model["input_std"])))
+    output_tokens = max(1, int(positive_normal(model["avg_output_tokens"], model["output_std"])))
+    cache_read = max(0, int(positive_normal(model["avg_cache_read"], model["cache_read_std"])))
     cache_create = max(
         0, int(positive_normal(model["avg_cache_create"], model["cache_create_std"]))
     )
     cost = max(0, positive_normal(model["avg_cost"], model["cost_std"]))
-    duration = max(
-        100, int(positive_normal(model["avg_duration_ms"], model["duration_std"]))
-    )
+    duration = max(100, int(positive_normal(model["avg_duration_ms"], model["duration_std"])))
 
     attrs = make_common_attributes(user, session_id, timestamp)
     attrs.update(
@@ -590,9 +582,7 @@ def generate_user_prompt_event(user, session_id, timestamp):
 
 def generate_api_error_event(user, session_id, timestamp):
     """Generate a claude_code.api_error event."""
-    error_msg, status_code = weighted_choice(
-        [((msg, code), w) for msg, code, w in API_ERRORS]
-    )
+    error_msg, status_code = weighted_choice([((msg, code), w) for msg, code, w in API_ERRORS])
     model_name = weighted_choice([(m, d["weight"]) for m, d in MODELS.items()])
     duration = max(50, int(positive_normal(500, 600)))
     attempt = random.choices([1, 2, 3], weights=[70, 20, 10], k=1)[0]
@@ -703,9 +693,7 @@ def events_to_log_batches(events, batch_size_range=(1, 10)):
         for event in batch_events:
             ts = event["attributes"]["event.timestamp"]
             # Parse the timestamp back to epoch ms
-            dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ").replace(
-                tzinfo=timezone.utc
-            )
+            dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
             epoch_ms = int(dt.timestamp() * 1000)
 
             logevents.append(
@@ -718,9 +706,7 @@ def events_to_log_batches(events, batch_size_range=(1, 10)):
 
         if logevents:
             # Use the first event's timestamp for partitioning
-            first_dt = datetime.fromtimestamp(
-                logevents[0]["timestamp"] / 1000, tz=timezone.utc
-            )
+            first_dt = datetime.fromtimestamp(logevents[0]["timestamp"] / 1000, tz=timezone.utc)
             batch = {
                 "messageType": "DATA_MESSAGE",
                 "owner": "123456789012",
@@ -738,15 +724,9 @@ def events_to_log_batches(events, batch_size_range=(1, 10)):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate fake Claude Code telemetry data"
-    )
-    parser.add_argument(
-        "--num-users", type=int, default=30, help="Number of fake users"
-    )
-    parser.add_argument(
-        "--num-sessions", type=int, default=500, help="Total number of sessions"
-    )
+    parser = argparse.ArgumentParser(description="Generate fake Claude Code telemetry data")
+    parser.add_argument("--num-users", type=int, default=30, help="Number of fake users")
+    parser.add_argument("--num-sessions", type=int, default=500, help="Total number of sessions")
     parser.add_argument("--days", type=int, default=30, help="Number of days to span")
     parser.add_argument("--output-dir", default="output", help="Output directory")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
@@ -787,16 +767,15 @@ def main():
         else:
             hour = random.randint(0, 23)
         minute = random.randint(0, 59)
-        session_start = session_day.replace(
-            hour=hour, minute=minute, second=0, microsecond=0
-        )
+        session_start = session_day.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
         events = generate_session_events(user, session_id, session_start)
         all_events.extend(events)
 
         if (session_num + 1) % 100 == 0:
             print(
-                f"  Generated session {session_num + 1}/{args.num_sessions} ({len(all_events)} events so far)"
+                f"  Generated session {session_num + 1}/{args.num_sessions} "
+                f"({len(all_events)} events so far)"
             )
 
     print(f"  Total events generated: {len(all_events)}")

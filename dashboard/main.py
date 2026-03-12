@@ -104,18 +104,14 @@ def main():
             total_output = events_df["output_tokens"].dropna().astype(float).sum()
         except Exception:
             total_output = None
-    c3.metric(
-        "Output tokens (sum)", int(total_output) if total_output is not None else "N/A"
-    )
+    c3.metric("Output tokens (sum)", int(total_output) if total_output is not None else "N/A")
 
     if "total_tokens" in events_df.columns:
         try:
             total_tokens = events_df["total_tokens"].dropna().astype(float).sum()
         except Exception:
             total_tokens = None
-    c4.metric(
-        "Total tokens (sum)", int(total_tokens) if total_tokens is not None else "N/A"
-    )
+    c4.metric("Total tokens (sum)", int(total_tokens) if total_tokens is not None else "N/A")
 
     if "timestamp" in events_df.columns:
         try:
@@ -187,11 +183,10 @@ def main():
         email_col = detect_email_col(emp_df)
         role_col = detect_role_col(emp_df)
 
-        # choose join keys from events: prefer user_email, then attr_user_email, then user_account_uuid
+        # choose join keys from events: prefer user_email,
+        # then attr_user_email, then user_account_uuid
         if "user_email" in events_df.columns and email_col:
-            merged = events_df.merge(
-                emp_df, left_on="user_email", right_on=email_col, how="left"
-            )
+            merged = events_df.merge(emp_df, left_on="user_email", right_on=email_col, how="left")
         elif "attr_user_email" in events_df.columns and email_col:
             merged = events_df.merge(
                 emp_df, left_on="attr_user_email", right_on=email_col, how="left"
@@ -211,9 +206,7 @@ def main():
 
         if role_to_use and "output_tokens" in merged.columns:
             # coerce numeric
-            merged["output_tokens_num"] = pd.to_numeric(
-                merged["output_tokens"], errors="coerce"
-            )
+            merged["output_tokens_num"] = pd.to_numeric(merged["output_tokens"], errors="coerce")
             by_role = (
                 merged.groupby(role_to_use)["output_tokens_num"]
                 .sum()
@@ -222,9 +215,7 @@ def main():
             )
             st.bar_chart(by_role)
         else:
-            st.info(
-                "Employees or role column not detected, or no output_tokens column available"
-            )
+            st.info("Employees or role column not detected, or no output_tokens column available")
     else:
         st.info("Employees table or events table is empty; run ingestion script first")
 
@@ -235,9 +226,7 @@ def main():
     if "user_email" in events_df.columns:
         top_users = events_df["user_email"].value_counts().head(20)
         st.table(
-            top_users.reset_index().rename(
-                columns={"index": "user_email", "user_email": "events"}
-            )
+            top_users.reset_index().rename(columns={"index": "user_email", "user_email": "events"})
         )
     else:
         st.info("No user_email column found in telemetry_events")
@@ -248,16 +237,28 @@ def main():
     st.markdown("### Common analytics queries")
     predefined = {
         "Token consumption trends": (
-            "SELECT\n  DATE(ts) AS day,\n  SUM(total_tokens) AS tokens\nFROM telemetry_events\nGROUP BY day\nORDER BY day;"
+            "SELECT\n  DATE(ts) AS day,\n  SUM(total_tokens) AS tokens\n"
+            "FROM telemetry_events\nGROUP BY day\nORDER BY day;"
         ),
         "Usage by seniority": (
-            "SELECT\n  e.level,\n  SUM(t.total_tokens) AS tokens\nFROM telemetry_events t\nJOIN employees e\n  ON t.user_email = e.email\nGROUP BY e.level;"
+            "SELECT\n  e.level,\n  SUM(t.total_tokens) AS tokens\n"
+            "FROM telemetry_events t\n"
+            "JOIN employees e\n  ON t.user_email = e.email\nGROUP BY e.level;"
         ),
         "Peak usage hours": (
-            "SELECT\n  EXTRACT(hour FROM ts) AS hour,\n  COUNT(*) AS events\nFROM telemetry_events\nGROUP BY hour\nORDER BY events DESC;"
+            "SELECT\n  EXTRACT(hour FROM ts) AS hour,\n  "
+            "COUNT(*) AS events\n"
+            "FROM telemetry_events\n"
+            "GROUP BY hour\nORDER BY events DESC;"
         ),
         "Most used models": (
-            "SELECT\n  model_norm AS model,\n  COUNT(*) AS usage\nFROM (\n  SELECT lower(coalesce(NULLIF(trim(model), ''), NULLIF(trim(attr_model), ''), NULLIF(trim(model_name), ''))) AS model_norm\n  FROM telemetry_events\n) t\nWHERE model_norm IS NOT NULL\nGROUP BY model_norm\nORDER BY usage DESC;"
+            "SELECT\n  model_norm AS model,\n  COUNT(*) AS usage\nFROM "
+            "(\n  SELECT lower(coalesce("
+            "NULLIF(trim(model), ''), "
+            "NULLIF(trim(attr_model), ''), "
+            "NULLIF(trim(model_name), ''))) "
+            "AS model_norm\n  FROM telemetry_events\n)"
+            " t\nWHERE model_norm IS NOT NULL\nGROUP BY model_norm\nORDER BY usage DESC;"
         ),
     }
 
@@ -266,7 +267,8 @@ def main():
     st.code(sql, language="sql")
     if st.button("Run query"):
         try:
-            # If the chosen query is 'Most used models', dynamically build SQL based on available columns
+            # If the chosen query is 'Most used models',
+            # dynamically build SQL based on available columns
             if choice == "Most used models":
                 # get columns for telemetry_events
                 db = get_db_path()
@@ -274,7 +276,10 @@ def main():
                     cols = [
                         r[0]
                         for r in c.execute(
-                            "SELECT column_name FROM information_schema.columns WHERE table_name='telemetry_events' AND table_schema='main'"
+                            "SELECT column_name FROM "
+                            "information_schema.columns "
+                            "WHERE table_name='telemetry_events' "
+                            "AND table_schema='main'"
                         ).fetchall()
                     ]
                 # candidate columns to look for (order of preference)
@@ -292,12 +297,11 @@ def main():
                 else:
                     skip_query = False
                 # build coalesce list safely
-                coalesce_parts = ", ".join(
-                    [f"NULLIF(trim({c}), '')" for c in available]
-                )
+                coalesce_parts = ", ".join([f"NULLIF(trim({c}), '')" for c in available])
                 sql = (
                     "SELECT model_norm AS model, COUNT(*) AS usage FROM ("
-                    f"  SELECT lower(coalesce({coalesce_parts})) AS model_norm FROM telemetry_events"
+                    f"  SELECT lower(coalesce({coalesce_parts}))"
+                    f" AS model_norm FROM telemetry_events"
                     ") t WHERE model_norm IS NOT NULL GROUP BY model_norm ORDER BY usage DESC;"
                 )
 
@@ -351,8 +355,10 @@ def main():
 
     expanded_state = True if keep_open else False
     with st.expander("Custom SQL (run any query)", expanded=expanded_state):
-        # initialize session state above; pass the key only to avoid creating the widget with a default
-        # value while also setting it via the Session State API (which triggers a Streamlit warning).
+        # initialize session state above;
+        # pass the key only to avoid creating the widget with a default
+        # value while also setting it via the Session State API
+        # (which triggers a Streamlit warning).
         custom_sql = st.text_area("SQL", height=200, key="custom_sql_text")
         if st.button("Run custom SQL"):
             # Safety checks: only allow read-only SELECT queries and block dangerous keywords
@@ -378,7 +384,12 @@ def main():
                 ):
                     return False, "Only single SELECT queries are allowed for security"
                 # block dangerous keywords anywhere as whole words
-                forbidden = r"\b(insert|update|delete|drop|alter|create|replace|truncate|attach|detach|pragma|copy|vacuum|shutdown)\b"
+                forbidden = (
+                    r"\b("
+                    r"insert|update|delete|drop|alter|create|replace|truncate|"
+                    r"attach|detach|pragma|copy|vacuum|shutdown"
+                    r")\b"
+                )
                 if re.search(forbidden, sql_clean, flags=re.I):
                     return False, "Query contains forbidden operations"
                 return True, ""
