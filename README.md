@@ -212,6 +212,30 @@ pytest tests/test_ingest_helpers.py::test_process_chunk_minimal -q
 
 The CI (if enabled) will run the same test commands on push/PR. If you discover test import issues, ensure your project root is on `PYTHONPATH` or run tests from the repository root.
 
+### Pre-commit (recommended)
+
+To avoid CI failures after push, install `pre-commit` and enable the local hooks. These hooks run `black`, `ruff`, and `isort` on each commit.
+
+1. Install pre-commit (in your virtualenv):
+
+```bash
+pip install pre-commit
+```
+
+2. Install the git hooks:
+
+```bash
+pre-commit install
+```
+
+3. Optionally run the hooks over all files once:
+
+```bash
+pre-commit run --all-files
+```
+
+This will automatically format and lint files locally before commits so CI is less likely to fail.
+
 ## Development notes
 
 - Keep the top-level module docstring in `ingestion/parse_logs.py` up to date — it documents inputs, outputs, and side-effects.
