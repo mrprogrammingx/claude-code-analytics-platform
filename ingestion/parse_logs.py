@@ -39,6 +39,7 @@ DATA_DIR = "data_generator/output"
 LOG_PATH = f"{DATA_DIR}/telemetry_logs.jsonl"
 EMPLOYEE_PATH = f"{DATA_DIR}/employees.csv"
 DB_PATH = "analytics.db"
+CHUNK_SIZE = 10_000_000  # adjust based on memory
 
 def safe_int(val):
     try:
@@ -61,36 +62,31 @@ def normalize_key(k: str) -> str:
     return k.replace('.', '_')
 
 
-# NOTE: For very large datasets this should be processed in batches and/or using a streaming approach instead of loading everything into memory at once.
-events = []
+# Connect to DuckDB once
+con = duckdb.connect(DB_PATH)
+con.execute('DROP TABLE IF EXISTS telemetry_events')
 
-with open(LOG_PATH) as f:
-    print("Reading logs...")
-    for line in f:
-        record = json.loads(line)
+def process_chunk(chunk_events):
+    """Normalize and flatten a list of events, return as DataFrame"""
+    processed = []
 
+    for record in chunk_events:
         for event in record.get('logEvents', []):
-            # event['message'] is a JSON-encoded string in the sample data; handle both str and dict
             raw_message = event.get('message')
             if isinstance(raw_message, str):
                 try:
                     message = json.loads(raw_message)
                 except json.JSONDecodeError:
-                    # if it's not valid json, keep it as raw string
                     message = {'body': raw_message}
             else:
                 message = raw_message or {}
 
-            # event id in the outer JSON is already a string (not JSON-encoded); don't json.loads it
             id = event.get('id')
-
-            # print(f"Processing event {id}...")
-
             body = message.get('body', {})
             attributes = message.get('attributes', {}) or {}
             resource = message.get('resource', {}) or {}
 
-            # pull common numeric fields and try to cast them
+            # numeric fields
             prompt_length = safe_int(attributes.get('prompt_length') or attributes.get('prompt.length'))
             input_tokens = safe_int(attributes.get('input_tokens'))
             output_tokens = safe_int(attributes.get('output_tokens'))
@@ -98,7 +94,7 @@ with open(LOG_PATH) as f:
             cache_read_tokens = safe_int(attributes.get('cache_read_tokens'))
             duration_ms = safe_int(attributes.get('duration_ms'))
             cost_usd = safe_float(attributes.get('cost_usd'))
-            # base event dict with explicit, commonly used fields
+
             evt = {
                 'id': id,
                 'body': body,
@@ -109,7 +105,6 @@ with open(LOG_PATH) as f:
                 'session_id': attributes.get('session.id'),
                 'terminal_type': attributes.get('terminal.type'),
                 'user_account_uuid': attributes.get('user.account_uuid'),
-                # rich/optional fields
                 'prompt': attributes.get('prompt'),
                 'prompt_length': prompt_length,
                 'model': attributes.get('model'),
@@ -121,7 +116,7 @@ with open(LOG_PATH) as f:
                 'cost_usd': cost_usd,
                 'decision': attributes.get('decision'),
                 'tool_name': attributes.get('tool_name'),
-                # resource fields (explicit)
+                # resource
                 'resource_host_name': resource.get('host.name'),
                 'resource_host_arch': resource.get('host.arch'),
                 'resource_os_type': resource.get('os.type'),
@@ -131,59 +126,82 @@ with open(LOG_PATH) as f:
                 'user_practice': resource.get('user.practice'),
                 'user_profile': resource.get('user.profile'),
                 'user_serial': resource.get('user.serial'),
-                # keep raw blobs for debugging if needed
+                # raw blobs
                 'raw_attributes': attributes,
                 'raw_resource': resource,
+                # top-level record
+                'record_owner': record.get('owner'),
+                'record_logGroup': record.get('logGroup'),
+                'record_logStream': record.get('logStream'),
+                'record_subscriptionFilters': record.get('subscriptionFilters'),
+                'record_year': record.get('year'),
+                'record_month': record.get('month'),
+                'record_day': record.get('day'),
             }
 
-            # Flatten all attributes into the event with an 'attr_' prefix, normalizing dots to underscores.
+            # Flatten attributes
             for k, v in attributes.items():
                 nk = normalize_key(k)
                 key = f'attr_{nk}'
-                # don't overwrite explicit fields
                 if key not in evt:
                     evt[key] = v
 
-            # Flatten all resource fields into the event with a 'res_' prefix
+            # Flatten resource
             for k, v in resource.items():
                 nk = normalize_key(k)
                 key = f'res_{nk}'
                 if key not in evt:
                     evt[key] = v
 
-            # Include top-level record metadata if available
-            evt['record_owner'] = record.get('owner')
-            evt['record_logGroup'] = record.get('logGroup')
-            evt['record_logStream'] = record.get('logStream')
-            evt['record_subscriptionFilters'] = record.get('subscriptionFilters')
-            evt['record_year'] = record.get('year')
-            evt['record_month'] = record.get('month')
-            evt['record_day'] = record.get('day')
+            processed.append(evt)
 
-            events.append(evt)
+    df_chunk = pd.DataFrame(processed)
+    if not df_chunk.empty:
+        # add datetime and total_tokens
+        df_chunk['ts'] = pd.to_datetime(df_chunk['timestamp'], unit='ms', errors='coerce')
+        df_chunk['total_tokens'] = (
+            df_chunk['input_tokens'].fillna(0) + df_chunk['output_tokens'].fillna(0)
+        )
+    return df_chunk
 
-df = pd.DataFrame(events)
+buffer = []
+count = 0
 
-# normalize timestamp and add a datetime column for easier analysis and also calculate total tokens as a common metric
-if not df.empty:
-    print(f"Loaded {len(df)} telemetry events")
+with open(LOG_PATH) as f:
+    print("Reading logs in chunks...")
+    for line in f:
+        record = json.loads(line)
+        buffer.append(record)
+        if len(buffer) >= CHUNK_SIZE:
+            df_chunk = process_chunk(buffer)
+            if count == 0:
+                # Create table with the first chunk
+                con.execute("CREATE TABLE telemetry_events AS SELECT * FROM df_chunk")
+                # Get table columns for later chunks
+                table_cols = [c[0] for c in con.execute("PRAGMA table_info('telemetry_events')").fetchall()]
+            else:
+                # Make sure df_chunk has all columns (fill missing with NULL)
+                for col in table_cols:
+                    if col not in df_chunk.columns:
+                        df_chunk[col] = None
+                # Reorder columns to match table
+                df_chunk = df_chunk[table_cols]
+                con.execute("INSERT INTO telemetry_events SELECT * FROM df_chunk")
 
-    # timestamp in the logs is epoch milliseconds
-    df['ts'] = pd.to_datetime(df['timestamp'], unit='ms', errors='coerce')
-    df['total_tokens'] = (
-        df['input_tokens'].fillna(0) +
-        df['output_tokens'].fillna(0)
-    )
+            count += len(df_chunk)
+
+# process remaining
+if buffer:
+    df_chunk = process_chunk(buffer)
+    con.execute("CREATE TABLE IF NOT EXISTS telemetry_events AS SELECT * FROM df_chunk") if count==0 else con.execute("INSERT INTO telemetry_events SELECT * FROM df_chunk")
+    count += len(df_chunk)
+    print(f"Inserted total {count} events.")
 
 
-con = duckdb.connect(DB_PATH)
-
-# register and persist telemetry events into DuckDB for future analyses
-con.register('df_events', df)
-con.execute('DROP TABLE IF EXISTS telemetry_events')
-con.execute('CREATE TABLE telemetry_events AS SELECT * FROM df_events')
+# create indexes
 con.execute("CREATE INDEX idx_user_email ON telemetry_events(user_email)")
 con.execute("CREATE INDEX idx_ts ON telemetry_events(ts)")
+
 
 # load employees CSV and persist
 try:
