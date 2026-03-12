@@ -1,4 +1,5 @@
 # Analytics Platform
+[![CI](https://github.com/mrprogrammingx/analytics-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mrprogrammingx/analytics-platform/actions/workflows/ci.yml)
 
 An end-to-end Claude Code usage analytics platform. This repository contains:
 

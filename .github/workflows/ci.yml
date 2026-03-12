@@ -37,19 +37,11 @@ jobs:
 
       - name: Run linters (ruff)
         run: |
-          if command -v ruff >/dev/null 2>&1; then
-            ruff check . || true
-          else
-            echo "ruff not installed; skipping"
-          fi
+          ruff check .
 
       - name: Check formatting (black)
         run: |
-          if command -v black >/dev/null 2>&1; then
-            black --check . || true
-          else
-            echo "black not installed; skipping"
-          fi
+          black --check .
 
       - name: Run tests
         run: |
