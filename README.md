@@ -58,13 +58,13 @@ pip install -r requirements.txt
 
 ```bash
 # This script writes sample files into data_generator/output
-python3 data_generator/generate_fake_data.py
+python3 -m data_generator.generate_fake_data
 ```
 
 3. Populate the DuckDB analytics database by running the ingestion script:
 
 ```bash
-python3 ingestion/parse_logs.py
+python3 -m ingestion.parse_logs
 ```
 
 Note: the ingestion script reads from a data directory defined in `ingestion/parse_logs.py` (default: `data_generator/output`). The generator creates that output folder and files automatically, so there's no need to copy files between directories.
@@ -73,7 +73,7 @@ Note: the ingestion script reads from a data directory defined in `ingestion/par
 
 ```bash
 # recommended: run the app from the dashboard package
-streamlit run dashboard/app.py
+streamlit run dashboard/main.py
 ```
 
 Open the local URL printed by Streamlit (usually http://localhost:8501).
@@ -95,7 +95,7 @@ analytics-platform
 │   └── parse_logs.py            # Parses telemetry logs and loads DuckDB
 │
 ├── dashboard
-│   └── app.py                   # Streamlit analytics dashboard
+│   └── main.py                   # Streamlit analytics dashboard
 │
 ├── scripts
 │   └── run_pipeline.sh          # Runs full pipeline (generate → ingest)
@@ -110,7 +110,7 @@ analytics-platform
 
 - `data_generator/generate_fake_data.py` — creates a small set of telemetry JSONL and an `employees.csv` so you can exercise the ingestion and dashboard without real logs.
 - `ingestion/parse_logs.py` — reads the JSONL, normalizes nested fields (turns dotted keys into underscored columns), coerces numeric fields, computes `ts` (datetime) and `total_tokens`, and writes two DuckDB tables: `telemetry_events` and `employees` in `analytics.db`.
-- `dashboard/app.py` — interactive dashboard that reads aggregates from `analytics.db`, offers common pre-made queries and a safe custom-SQL editor (preview mode with LIMIT + cached results).
+- `dashboard/main.py` — interactive dashboard that reads aggregates from `analytics.db`, offers common pre-made queries and a safe custom-SQL editor (preview mode with LIMIT + cached results).
 - `scripts/run_pipeline.sh` — convenience pipeline script that orchestrates the full workflow: optionally generates fake telemetry data, runs the ingestion script to populate `analytics.db`, and launches the Streamlit dashboard.
 - `scripts/run_pipeline.sh` — The platform also exposes a lightweight REST API for programmatic access to the analytics data.
 
@@ -122,7 +122,9 @@ The platform also exposes a lightweight REST API for programmatic access to the 
 
 Run:
 
+```bash
 uvicorn api.server:app --reload
+```
 
 Available endpoints:
 
@@ -146,7 +148,7 @@ http://localhost:8000/docs
 
 - If the dashboard errors when connecting to `analytics.db`, ensure the file exists in the repository root and is writable.
 - If `employees` or `telemetry_events` tables are missing after ingestion, double-check the `LOG_PATH` and `EMPLOYEE_PATH` constants in `ingestion/parse_logs.py` and verify the sample files exist.
-- If Streamlit segfaults or crashes intermittently, make sure the app is using short-lived DuckDB connections (the current `dashboard/app.py` uses read-only connections per query).
+- If Streamlit segfaults or crashes intermittently, make sure the app is using short-lived DuckDB connections (the current `dashboard/main.py` uses read-only connections per query).
 
 ---
 
