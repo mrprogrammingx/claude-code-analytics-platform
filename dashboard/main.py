@@ -5,11 +5,12 @@ import re
 import tempfile
 import shutil
 import os
+from app.config import DB_PATH
 
 st.set_page_config(page_title="Telemetry Analytics", layout="wide")
 
 def get_db_path() -> str:
-    return "analytics.db"
+    return DB_PATH
 
 
 def load_tables():
