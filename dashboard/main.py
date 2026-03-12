@@ -7,7 +7,7 @@ import duckdb
 import pandas as pd
 import streamlit as st
 
-from app.config import DB_PATH
+from app.config import DANGEROUS_SQL_KEYWORDS, DB_PATH
 
 st.set_page_config(page_title="Telemetry Analytics", layout="wide")
 
@@ -384,12 +384,7 @@ def main():
                 ):
                     return False, "Only single SELECT queries are allowed for security"
                 # block dangerous keywords anywhere as whole words
-                forbidden = (
-                    r"\b("
-                    r"insert|update|delete|drop|alter|create|replace|truncate|"
-                    r"attach|detach|pragma|copy|vacuum|shutdown"
-                    r")\b"
-                )
+                forbidden = r"\b(" + "|".join(DANGEROUS_SQL_KEYWORDS) + r")\b"
                 if re.search(forbidden, sql_clean, flags=re.I):
                     return False, "Query contains forbidden operations"
                 return True, ""

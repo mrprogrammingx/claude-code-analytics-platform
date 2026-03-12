@@ -40,7 +40,7 @@ import json
 import duckdb
 import pandas as pd
 
-from app.config import CHUNK_SIZE, DB_PATH, EMPLOYEE_PATH, LOG_PATH
+from app.config import CHUNK_SIZE, DB_PATH, EMPLOYEE_PATH, LOG_PATH, TABLE_NAMES
 
 
 def safe_int(val):
@@ -66,7 +66,7 @@ def normalize_key(k: str) -> str:
 
 # Connect to DuckDB once
 con = duckdb.connect(DB_PATH)
-con.execute("DROP TABLE IF EXISTS telemetry_events")
+con.execute(f"DROP TABLE IF EXISTS {TABLE_NAMES['telemetry']}")
 
 
 def process_chunk(chunk_events):
@@ -182,10 +182,10 @@ with open(LOG_PATH) as f:
             df_chunk = process_chunk(buffer)
             if count == 0:
                 # Create table with the first chunk
-                con.execute("CREATE TABLE telemetry_events AS SELECT * FROM df_chunk")
+                con.execute(f"CREATE TABLE {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk")
                 # Get table columns for later chunks
                 table_cols = [
-                    c[0] for c in con.execute("PRAGMA table_info('telemetry_events')").fetchall()
+                    c[0] for c in con.execute(f"PRAGMA table_info('{TABLE_NAMES['telemetry']}')").fetchall()
                 ]
             else:
                 # Make sure df_chunk has all columns (fill missing with NULL)
@@ -194,7 +194,7 @@ with open(LOG_PATH) as f:
                         df_chunk[col] = None
                 # Reorder columns to match table
                 df_chunk = df_chunk[table_cols]
-                con.execute("INSERT INTO telemetry_events SELECT * FROM df_chunk")
+                con.execute(f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk")
 
             count += len(df_chunk)
 
@@ -202,29 +202,29 @@ with open(LOG_PATH) as f:
 if buffer:
     df_chunk = process_chunk(buffer)
     (
-        con.execute("CREATE TABLE IF NOT EXISTS telemetry_events AS SELECT * FROM df_chunk")
+        con.execute(f"CREATE TABLE IF NOT EXISTS {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk")
         if count == 0
-        else con.execute("INSERT INTO telemetry_events SELECT * FROM df_chunk")
+        else con.execute(f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk")
     )
     count += len(df_chunk)
     print(f"Inserted total {count} events.")
 
 
 # create indexes
-con.execute("CREATE INDEX idx_user_email ON telemetry_events(user_email)")
-con.execute("CREATE INDEX idx_ts ON telemetry_events(ts)")
+con.execute(f"CREATE INDEX idx_user_email ON {TABLE_NAMES['telemetry']}(user_email)")
+con.execute(f"CREATE INDEX idx_ts ON {TABLE_NAMES['telemetry']}(ts)")
 
 
 # load employees CSV and persist
 try:
     employees_df = pd.read_csv(EMPLOYEE_PATH)
     con.register("df_employees", employees_df)
-    con.execute("DROP TABLE IF EXISTS employees")
-    con.execute("CREATE TABLE employees AS SELECT * FROM df_employees")
-    print(f"Loaded employees.csv with {len(employees_df)} rows")
+    con.execute(f"DROP TABLE IF EXISTS {TABLE_NAMES['employees']}")
+    con.execute(f"CREATE TABLE {TABLE_NAMES['employees']} AS SELECT * FROM df_employees")
+    print(f"Loaded {EMPLOYEE_PATH} with {len(employees_df)} rows")
 except FileNotFoundError:
-    print(f"employees.csv not found at {EMPLOYEE_PATH}; skipping employees table creation")
+    print(f"{EMPLOYEE_PATH} not found at {EMPLOYEE_PATH}; skipping employees table creation")
 except Exception as e:
-    print(f"Error loading employees.csv: {e}")
+    print(f"Error loading {EMPLOYEE_PATH}: {e}")
 
 con.close()
