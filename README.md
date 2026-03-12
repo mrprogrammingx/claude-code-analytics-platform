@@ -104,6 +104,9 @@ analytics-platform
 ├── scripts
 │   └── run_pipeline.sh          # Runs full pipeline (generate → ingest)
 │
+├── tests
+│   └── test_ingest_helpers.py    # unit tests (pytest)
+│
 ├── analytics.db                 # DuckDB analytics database
 ├── requirements.txt             # Python dependencies
 ├── requirements-dev.txt         # Python development dependencies
@@ -183,6 +186,30 @@ You can install them using:
 ```bash
 pip install -r requirements.txt
 ```
+
+## Running tests
+
+Unit tests live under the `tests/` directory and use `pytest`.
+
+1. Install development dependencies (recommended inside your virtualenv):
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+2. Run the full test suite:
+
+```bash
+pytest -q
+```
+
+3. Run a single test file or test function:
+
+```bash
+pytest tests/test_ingest_helpers.py::test_process_chunk_minimal -q
+```
+
+The CI (if enabled) will run the same test commands on push/PR. If you discover test import issues, ensure your project root is on `PYTHONPATH` or run tests from the repository root.
 
 ## Development notes
 
