@@ -39,6 +39,7 @@ import json
 
 import duckdb
 import pandas as pd
+import argparse
 
 from app.config import CHUNK_SIZE, DB_PATH, EMPLOYEE_PATH, LOG_PATH, TABLE_NAMES
 
@@ -63,10 +64,6 @@ def normalize_key(k: str) -> str:
         return str(k)
     return k.replace(".", "_")
 
-
-# Connect to DuckDB once
-con = duckdb.connect(DB_PATH)
-con.execute(f"DROP TABLE IF EXISTS {TABLE_NAMES['telemetry']}")
 
 
 def process_chunk(chunk_events):
@@ -170,61 +167,108 @@ def process_chunk(chunk_events):
     return df_chunk
 
 
-buffer = []
-count = 0
+def ingest(log_path: str, employee_path: str, db_path: str, chunk_size: int):
+    """Ingest the JSONL at `log_path` into DuckDB at `db_path` using chunked processing."""
+    con = duckdb.connect(db_path)
+    try:
+        con.execute(f"DROP TABLE IF EXISTS {TABLE_NAMES['telemetry']}")
 
-with open(LOG_PATH) as f:
-    print("Reading logs in chunks...")
-    for line in f:
-        record = json.loads(line)
-        buffer.append(record)
-        if len(buffer) >= CHUNK_SIZE:
+        buffer = []
+        count = 0
+
+        with open(log_path) as f:
+            print("Reading logs in chunks...")
+            for line in f:
+                record = json.loads(line)
+                buffer.append(record)
+                if len(buffer) >= chunk_size:
+                    df_chunk = process_chunk(buffer)
+                    # skip empty chunks
+                    if df_chunk.empty:
+                        buffer = []
+                        continue
+
+                    # Register DataFrame with DuckDB before executing SQL that references it
+                    con.register("df_chunk", df_chunk)
+
+                    if count == 0:
+                        # Create table with the first chunk
+                        con.execute(f"CREATE TABLE {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk")
+                        # Get table columns for later chunks
+                        table_cols = [
+                            c[0]
+                            for c in con.execute(
+                                f"PRAGMA table_info('{TABLE_NAMES['telemetry']}')"
+                            ).fetchall()
+                        ]
+                    else:
+                        # Make sure df_chunk has all columns (fill missing with NULL)
+                        for col in table_cols:
+                            if col not in df_chunk.columns:
+                                df_chunk[col] = None
+                        # Reorder columns to match table
+                        df_chunk = df_chunk[table_cols]
+                        con.register("df_chunk", df_chunk)
+                        con.execute(f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk")
+
+                    count += len(df_chunk)
+                    buffer = []
+
+        # process remaining
+        if buffer:
             df_chunk = process_chunk(buffer)
-            if count == 0:
-                # Create table with the first chunk
-                con.execute(f"CREATE TABLE {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk")
-                # Get table columns for later chunks
-                table_cols = [
-                    c[0] for c in con.execute(f"PRAGMA table_info('{TABLE_NAMES['telemetry']}')").fetchall()
-                ]
-            else:
-                # Make sure df_chunk has all columns (fill missing with NULL)
-                for col in table_cols:
-                    if col not in df_chunk.columns:
-                        df_chunk[col] = None
-                # Reorder columns to match table
-                df_chunk = df_chunk[table_cols]
-                con.execute(f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk")
+            if not df_chunk.empty:
+                con.register("df_chunk", df_chunk)
+                if count == 0:
+                    con.execute(
+                        f"CREATE TABLE IF NOT EXISTS {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk"
+                    )
+                    table_cols = [
+                        c[0]
+                        for c in con.execute(
+                            f"PRAGMA table_info('{TABLE_NAMES['telemetry']}')"
+                        ).fetchall()
+                    ]
+                else:
+                    for col in table_cols:
+                        if col not in df_chunk.columns:
+                            df_chunk[col] = None
+                    df_chunk = df_chunk[table_cols]
+                    con.register("df_chunk", df_chunk)
+                    con.execute(f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk")
 
-            count += len(df_chunk)
+                count += len(df_chunk)
+        print(f"Inserted total {count} events.")
 
-# process remaining
-if buffer:
-    df_chunk = process_chunk(buffer)
-    (
-        con.execute(f"CREATE TABLE IF NOT EXISTS {TABLE_NAMES['telemetry']} AS SELECT * FROM df_chunk")
-        if count == 0
-        else con.execute(f"INSERT INTO {TABLE_NAMES['telemetry']} SELECT * FROM df_chunk")
-    )
-    count += len(df_chunk)
-    print(f"Inserted total {count} events.")
+        # create indexes
+        con.execute(f"CREATE INDEX IF NOT EXISTS idx_user_email ON {TABLE_NAMES['telemetry']}(user_email)")
+        con.execute(f"CREATE INDEX IF NOT EXISTS idx_ts ON {TABLE_NAMES['telemetry']}(ts)")
+
+        # load employees CSV and persist
+        try:
+            employees_df = pd.read_csv(employee_path)
+            con.register("df_employees", employees_df)
+            con.execute(f"DROP TABLE IF EXISTS {TABLE_NAMES['employees']}")
+            con.execute(f"CREATE TABLE {TABLE_NAMES['employees']} AS SELECT * FROM df_employees")
+            print(f"Loaded {employee_path} with {len(employees_df)} rows")
+        except FileNotFoundError:
+            print(f"{employee_path} not found; skipping employees table creation")
+        except Exception as e:
+            print(f"Error loading {employee_path}: {e}")
+    finally:
+        con.close()
 
 
-# create indexes
-con.execute(f"CREATE INDEX idx_user_email ON {TABLE_NAMES['telemetry']}(user_email)")
-con.execute(f"CREATE INDEX idx_ts ON {TABLE_NAMES['telemetry']}(ts)")
+def main():
+    parser = argparse.ArgumentParser(description="Ingest telemetry JSONL into DuckDB")
+    parser.add_argument("--log-path", default=LOG_PATH, help="Path to telemetry JSONL file")
+    parser.add_argument("--employee-path", default=EMPLOYEE_PATH, help="Path to employees CSV")
+    parser.add_argument("--db-path", default=DB_PATH, help="Path to DuckDB file")
+    parser.add_argument("--chunk-size", type=int, default=CHUNK_SIZE, help="Chunk size for processing")
+    args = parser.parse_args()
+
+    ingest(args.log_path, args.employee_path, args.db_path, args.chunk_size)
 
 
-# load employees CSV and persist
-try:
-    employees_df = pd.read_csv(EMPLOYEE_PATH)
-    con.register("df_employees", employees_df)
-    con.execute(f"DROP TABLE IF EXISTS {TABLE_NAMES['employees']}")
-    con.execute(f"CREATE TABLE {TABLE_NAMES['employees']} AS SELECT * FROM df_employees")
-    print(f"Loaded {EMPLOYEE_PATH} with {len(employees_df)} rows")
-except FileNotFoundError:
-    print(f"{EMPLOYEE_PATH} not found at {EMPLOYEE_PATH}; skipping employees table creation")
-except Exception as e:
-    print(f"Error loading {EMPLOYEE_PATH}: {e}")
-
-con.close()
+if __name__ == "__main__":
+    main()
