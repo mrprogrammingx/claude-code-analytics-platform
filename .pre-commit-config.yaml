@@ -1,15 +1,23 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 24.11.0
+  # Use system-installed tools instead of fetching remote revisions. This
+  # avoids failures in environments where pre-commit can't fetch specific
+  # remote tags or where network access is restricted.
+  - repo: local
     hooks:
       - id: black
+        name: black (system)
+        entry: black
+        language: system
+        types: [python]
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.3.0
-    hooks:
       - id: ruff
+        name: ruff (system)
+        entry: ruff
+        language: system
+        types: [python]
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
       - id: isort
+        name: isort (system)
+        entry: isort
+        language: system
+        types: [python]
