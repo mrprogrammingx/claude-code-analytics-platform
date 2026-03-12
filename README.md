@@ -84,6 +84,9 @@ Open the local URL printed by Streamlit (usually http://localhost:8501).
 ```
 analytics-platform
 │
+├── app
+│   └── config.py                 # configs for the app
+│
 ├── api
 │   └── server.py                # FastAPI service exposing analytics endpoints
 │
@@ -112,8 +115,8 @@ analytics-platform
 - `ingestion/parse_logs.py` — reads the JSONL, normalizes nested fields (turns dotted keys into underscored columns), coerces numeric fields, computes `ts` (datetime) and `total_tokens`, and writes two DuckDB tables: `telemetry_events` and `employees` in `analytics.db`.
 - `dashboard/main.py` — interactive dashboard that reads aggregates from `analytics.db`, offers common pre-made queries and a safe custom-SQL editor (preview mode with LIMIT + cached results).
 - `scripts/run_pipeline.sh` — convenience pipeline script that orchestrates the full workflow: optionally generates fake telemetry data, runs the ingestion script to populate `analytics.db`, and launches the Streamlit dashboard.
-- `scripts/run_pipeline.sh` — The platform also exposes a lightweight REST API for programmatic access to the analytics data.
-
+- `api/server.py` — The platform also exposes a lightweight REST API for programmatic access to the analytics data.
+- `app/config.py` - Central configuration (paths, constants, settings)
 ---
 
 ## API Access
