@@ -11,9 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-MODELS_DIR = Path("models")
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
-MODEL_PATH = MODELS_DIR / "forecast.joblib"
+from app.config import DB_PATH as CFG_DB_PATH, MODELS_DIR, MODEL_PATH
 
 try:
     from sklearn.ensemble import RandomForestRegressor
@@ -22,7 +20,7 @@ try:
 except Exception:
     have_sklearn = False
 
-DB_PATH = Path("analytics.db")
+DB_PATH = CFG_DB_PATH
 
 
 def load_sample(n=1000):

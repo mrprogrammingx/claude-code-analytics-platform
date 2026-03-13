@@ -52,3 +52,18 @@ DANGEROUS_SQL_KEYWORDS = [
     "vacuum",
     "shutdown",
 ]
+
+# Models directory & persistence
+# Allow overriding via env var (useful in CI or tests)
+MODELS_DIR = Path(os.getenv("MODELS_DIR", BASE_DIR / "models"))
+try:
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    # best-effort; callers can create the dir if necessary
+    pass
+
+MODEL_PATH = MODELS_DIR / "forecast.joblib"
+
+# Mapping used by trainer and API for demo model categories. Keep here so the
+# trainer and API stay consistent.
+MODEL_CODE_MAP = {"claude-v1": 0, "claude-instant": 1, "gpt-4": 2}

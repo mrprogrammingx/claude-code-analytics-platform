@@ -13,15 +13,12 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from app.config import DB_PATH
-
-# model persistence path (trained by scripts/train_forecast.py)
-MODEL_PATH = Path("models") / "forecast.joblib"
+from app.config import DB_PATH, MODEL_PATH, MODEL_CODE_MAP
 
 # Simple mapping used by the trainer's synthetic data. If you change the
 # training pipeline to persist category mappings, update this mapping or
 # load the mapping from disk. This is a reasonable default for the demo.
-MODEL_CODE_MAP = {"claude-v1": 0, "claude-instant": 1, "gpt-4": 2}
+# ...MODEL_CODE_MAP moved to app.config
 
 app = FastAPI(title="Claude Telemetry Analytics API")
 logger = logging.getLogger("api.server")
