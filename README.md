@@ -251,3 +251,23 @@ If pre-commit reformats files, add and commit the changes before pushing so CI s
 ### LLM Usage
 
 A detailed log of how AI tools were used in this project is available in the [`LLM_USAGE_LOG.md`](LLM_USAGE_LOG.md) file.  
+
+## Demo script & Docker
+
+We provide a quick demo script and a Dockerfile for reproducible demos.
+
+- `scripts/demo.sh` — Bootstraps a venv (if missing), generates sample data inside `data_generator/output`, runs ingestion into `analytics.db`, starts the API in the background (logs to `api.log`) and launches the Streamlit dashboard.
+	- Important: the generator runs from inside `data_generator/` so output files are created in `data_generator/output` (not the repository root).
+
+- Docker: build a demo-ready image that pre-generates sample data and pre-runs ingestion so the image contains `analytics.db`:
+
+```bash
+# build
+docker build -t analytics-platform:latest .
+
+# run (dashboard is exposed on 8501, API on 8000)
+docker run --rm -p 8501:8501 -p 8000:8000 analytics-platform:latest
+```
+
+Note: pre-generating data during image build increases build time and image size. If you prefer a minimal image, remove the pre-generation `RUN` steps in the `Dockerfile` and run `demo.sh` inside the container instead.
+

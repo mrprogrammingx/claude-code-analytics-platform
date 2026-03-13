@@ -12,8 +12,11 @@ source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install -r requirements.txt
 
-echo "Generating sample data..."
-python -m data_generator.generate_fake_data --num-users 50 --num-sessions 500 --days 30
+echo "Generating sample data (running from data_generator/)..."
+(
+	cd data_generator
+	python generate_fake_data.py --num-users 50 --num-sessions 500 --days 30
+)
 
 echo "Ingesting into DuckDB..."
 python -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
