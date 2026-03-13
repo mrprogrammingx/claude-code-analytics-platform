@@ -146,8 +146,8 @@ Available endpoints:
 
 GET /events — recent telemetry events  
 GET /metrics — aggregated platform metrics  
-GET /users — top users by token usage
-GET /analytics/peak-hours - Peak hours for events
+GET /users — top users by token usage   
+GET /analytics/peak-hours - Peak hours for events   
 Interactive documentation is available at:
 
 http://localhost:8000/docs
