@@ -1,9 +1,6 @@
 name: CI
 
 on:
-  workflow_dispatch: {}
-  name: CI
-
   name: CI
 
   on:
@@ -86,3 +83,4 @@ on:
           with:
             name: executed-notebook
             path: notebooks/predictive_example-executed.ipynb
+        - name: Upload executed notebook
