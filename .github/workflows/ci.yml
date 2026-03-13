@@ -5,80 +5,101 @@ name: CI
 on:
   workflow_dispatch: {}
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    name: CI
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    env:
-      # Opt into Node.js 24 for JavaScript actions to avoid Node 20 deprecation warnings
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-    strategy:
-      matrix:
-        python-version: [3.11, 3.12]
+    on:
+      workflow_dispatch: {}
+      push:
+        branches: [ main ]
+      pull_request:
+        branches: [ main ]
 
-    steps:
-      - uses: actions/checkout@v4
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        env:
+          # Opt into Node.js 24 for JavaScript actions to avoid Node 20 deprecation warnings
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+        strategy:
+          name: CI
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+          on:
+            workflow_dispatch: {}
+            push:
+              branches: [ main ]
+            pull_request:
+              branches: [ main ]
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          jobs:
+            test:
+              runs-on: ubuntu-latest
+              env:
+                # Opt into Node.js 24 for JavaScript actions to avoid Node 20 deprecation warnings
+                FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+              strategy:
+                matrix:
+                  python-version: [3.11, 3.12]
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+              steps:
+                - uses: actions/checkout@v4
 
-      - name: Debug: python and packages
-        run: |
-          python --version
-          python -m pip --version
-          python -m pip list --format=columns
+                - name: Set up Python
+                  uses: actions/setup-python@v4
+                  with:
+                    python-version: ${{ matrix.python-version }}
 
-      - name: Ensure pre-commit installed
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pre-commit
+                - name: Cache pip
+                  uses: actions/cache@v4
+                  with:
+                    path: ~/.cache/pip
+                    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+                    restore-keys: |
+                      ${{ runner.os }}-pip-
 
-      - name: Run pre-commit hooks
-        run: |
-          if command -v pre-commit >/dev/null 2>&1; then
-            pre-commit run --all-files
-          else
-            echo "pre-commit not installed; skipping"
-          fi
+                - name: Install dependencies
+                  run: |
+                    python -m pip install --upgrade pip
+                    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+                    if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
-      - name: Run linters (ruff)
-        run: |
-          ruff check .
+                - name: "Debug: python and packages"
+                  run: |
+                    python --version
+                    python -m pip --version
+                    python -m pip list --format=columns
 
-      - name: Check formatting (black)
-        run: |
-          black --check .
+                - name: Ensure pre-commit installed
+                  run: |
+                    python -m pip install --upgrade pip
+                    python -m pip install pre-commit
 
-      - name: Run tests
-        run: |
-          pytest -q
+                - name: Run pre-commit hooks
+                  run: |
+                    if command -v pre-commit >/dev/null 2>&1; then
+                      pre-commit run --all-files
+                    else
+                      echo "pre-commit not installed; skipping"
+                    fi
 
-      - name: Execute predictive notebook
-        run: |
-          python -m pip install nbconvert
-          jupyter nbconvert --to notebook --execute notebooks/predictive_example.ipynb --ExecutePreprocessor.timeout=120 --output notebooks/predictive_example-executed.ipynb
+                - name: Run linters (ruff)
+                  run: |
+                    ruff check .
 
-      - name: Upload executed notebook
-        uses: actions/upload-artifact@v4
-        with:
-          name: executed-notebook
-          path: notebooks/predictive_example-executed.ipynb
+                - name: Check formatting (black)
+                  run: |
+                    black --check .
+
+                - name: Run tests
+                  run: |
+                    pytest -q
+
+                - name: Execute predictive notebook
+                  run: |
+                    python -m pip install nbconvert
+                    jupyter nbconvert --to notebook --execute notebooks/predictive_example.ipynb --ExecutePreprocessor.timeout=120 --output notebooks/predictive_example-executed.ipynb
+
+                - name: Upload executed notebook
+                  uses: actions/upload-artifact@v4
+                  with:
+                    name: executed-notebook
+                    path: notebooks/predictive_example-executed.ipynb
