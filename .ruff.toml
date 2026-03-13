@@ -1,0 +1,5 @@
+# Ruff configuration: exclude notebooks and jupyter notebooks which are executed in CI separately
+exclude = ["notebooks/**", "**/*.ipynb"]
+
+# Keep default settings otherwise; adjust line-length if needed
+line-length = 99
