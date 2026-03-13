@@ -18,7 +18,14 @@ logger = logging.getLogger("api.server")
 
 def _connect_readonly():
     """Return a new read-only DuckDB connection."""
-    return duckdb.connect(DB_PATH, read_only=True)
+    try:
+        # prefer read-only connections for safety
+        return duckdb.connect(str(DB_PATH), read_only=True)
+    except duckdb.ConnectionException:
+        # If another connection exists with a different configuration (common in tests),
+        # fall back to a normal (read-write) connection so queries can still run.
+        logger.warning("Failed to open read-only DuckDB connection; falling back to read-write")
+        return duckdb.connect(str(DB_PATH))
 
 
 def exec_query(sql: str, params: Optional[List[Any]] = None, to_dict: bool = True):
@@ -46,27 +53,47 @@ def exec_query(sql: str, params: Optional[List[Any]] = None, to_dict: bool = Tru
             res = res.replace([np.inf, -np.inf], np.nan)
             res = res.where(pd.notnull(res), None)
 
-            # convert numpy scalar types to native Python types for JSON serialization
-            def _to_py(v):
-                # None stays None
-                if v is None:
-                    return None
-                # pandas NA / NaN
-                try:
-                    if pd.isna(v):
-                        return None
-                except Exception:
-                    pass
-                # numpy scalar -> Python native
-                if isinstance(v, np.generic):
-                    try:
-                        return v.item()
-                    except Exception:
-                        return float(v)
-                # Decimal or other numeric-like objects - let json encoder handle or convert
-                return v
+            # Convert values column-wise to Python-native types for JSON serialization.
+            # Avoid DataFrame.applymap (deprecated); use Series.map where appropriate.
 
-            res = res.applymap(_to_py)
+            def _convert_series(s: pd.Series) -> pd.Series:
+                # For object dtype (dicts, nested blobs) keep as-is but sanitize scalars inside later
+                if s.dtype == "object":
+
+                    def _conv_obj(v):
+                        if v is None:
+                            return None
+                        # pandas NA
+                        if pd.isna(v):
+                            return None
+                        if isinstance(v, np.generic):
+                            try:
+                                return v.item()
+                            except Exception:
+                                try:
+                                    return float(v)
+                                except Exception:
+                                    return None
+                        return v
+
+                    return s.map(_conv_obj)
+
+                # For numeric types (float/int), coerce to Python scalars safely
+                if pd.api.types.is_integer_dtype(s.dtype):
+                    return s.map(lambda x: None if pd.isna(x) else int(x))
+                if pd.api.types.is_float_dtype(s.dtype):
+                    return s.map(lambda x: None if pd.isna(x) or not np.isfinite(x) else float(x))
+
+                # For datetime-like types, convert to ISO strings
+                if pd.api.types.is_datetime64_any_dtype(s.dtype) or isinstance(
+                    s.dtype, pd.DatetimeTZDtype
+                ):
+                    return s.map(lambda x: None if pd.isna(x) else x.isoformat())
+
+                # Fallback: map with NA handling
+                return s.map(lambda x: None if pd.isna(x) else x)
+
+            res = pd.concat([_convert_series(res[col]).rename(col) for col in res.columns], axis=1)
         except Exception:
             logger.exception(
                 "Failed to fully sanitize DataFrame values; proceeding with best-effort conversion"
