@@ -78,7 +78,8 @@ jobs:
           jupyter nbconvert --to notebook --execute notebooks/predictive_example.ipynb \
             --ExecutePreprocessor.timeout=120 \
             --ExecutePreprocessor.kernel_name=python3 \
-            --output notebooks/predictive_example-executed.ipynb
+            --output predictive_example-executed.ipynb \
+            --output-dir=notebooks
 
       - name: Upload executed notebook
         uses: actions/upload-artifact@v4
