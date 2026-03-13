@@ -1,17 +1,16 @@
 import logging
+import pickle
 from decimal import Decimal
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import duckdb
 import numpy as np
 import pandas as pd
-import pickle
-from pathlib import Path
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from fastapi import Body
 from pydantic import BaseModel, Field
 
 from app.config import DB_PATH
@@ -249,7 +248,9 @@ def _load_model():
     HTTPException(500).
     """
     if not MODEL_PATH.exists():
-        raise HTTPException(status_code=404, detail="model not found; run scripts/train_forecast.py to create one")
+        raise HTTPException(
+            status_code=404, detail="model not found; run scripts/train_forecast.py to create one"
+        )
     # prefer joblib when available
     try:
         import joblib

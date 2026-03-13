@@ -4,11 +4,12 @@ This script trains a trivial model to predict `total_tokens` from `prompt_length
 and `model` using either scikit-learn (if installed) or a numpy least-squares
 fallback. The trained model is persisted using joblib to `models/forecast.joblib`.
 """
-from pathlib import Path
-import pickle
 
-import pandas as pd
+import pickle
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 
 MODELS_DIR = Path("models")
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
@@ -16,7 +17,7 @@ MODEL_PATH = MODELS_DIR / "forecast.joblib"
 
 try:
     from sklearn.ensemble import RandomForestRegressor
-    from sklearn.model_selection import train_test_split
+
     have_sklearn = True
 except Exception:
     have_sklearn = False
@@ -44,8 +45,12 @@ def load_sample(n=1000):
     prompt_len = np.random.poisson(100, size=n) + np.random.randint(0, 50, size=n)
     models = np.random.choice(["claude-v1", "claude-instant", "gpt-4"], size=n)
     model_effect = {"claude-v1": 1.0, "claude-instant": 0.9, "gpt-4": 1.2}
-    total_tokens = (prompt_len * np.array([model_effect[m] for m in models]) + np.random.normal(0, 20, size=n)).astype(int)
-    return pd.DataFrame({"prompt_length": prompt_len, "model": models, "total_tokens": total_tokens})
+    total_tokens = (
+        prompt_len * np.array([model_effect[m] for m in models]) + np.random.normal(0, 20, size=n)
+    ).astype(int)
+    return pd.DataFrame(
+        {"prompt_length": prompt_len, "model": models, "total_tokens": total_tokens}
+    )
 
 
 def featurize(df: pd.DataFrame):
