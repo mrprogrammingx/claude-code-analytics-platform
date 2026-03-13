@@ -72,8 +72,13 @@ jobs:
 
       - name: Execute predictive notebook
         run: |
-          python -m pip install nbconvert
-          jupyter nbconvert --to notebook --execute notebooks/predictive_example.ipynb --ExecutePreprocessor.timeout=120 --output notebooks/predictive_example-executed.ipynb
+          python -m pip install nbconvert ipykernel
+          # register a kernel named 'python3' so nbconvert can find it on the runner
+          python -m ipykernel install --user --name=python3 --display-name=python3
+          jupyter nbconvert --to notebook --execute notebooks/predictive_example.ipynb \
+            --ExecutePreprocessor.timeout=120 \
+            --ExecutePreprocessor.kernel_name=python3 \
+            --output notebooks/predictive_example-executed.ipynb
 
       - name: Upload executed notebook
         uses: actions/upload-artifact@v4
