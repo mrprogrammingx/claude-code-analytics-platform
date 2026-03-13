@@ -342,6 +342,3 @@ The repository contains the following deliverables for submission:
 - `scripts/train_forecast.py` — small forecasting trainer that persists a model
 - `api/server.py` — FastAPI endpoints (including `/predict`)
 
-If you include an insights PDF or demo video, add links or files under `docs/`.
-
-
