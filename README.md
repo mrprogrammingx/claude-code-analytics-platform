@@ -266,6 +266,27 @@ docker run --rm -p 8501:8501 -p 8000:8000 analytics-platform:latest
 
 Note: pre-generating data during image build increases build time and image size. If you prefer a minimal image, remove the pre-generation `RUN` steps in the `Dockerfile` and run `demo.sh` inside the container instead.
 
+### Running the demo scripts
+
+The `scripts` folder is a Python package. Prefer running example scripts as a module so the repository root is on `sys.path` and in-repo imports (for example `app.config`) work correctly.
+
+- Combined demo (producer + consumer, 10s):
+```bash
+python -m scripts.realtime_simulator --mode demo --run-time 10
+```
+
+- Producer only:
+```bash
+python -m scripts.realtime_simulator --mode producer
+```
+
+- Consumer only:
+```bash
+python -m scripts.realtime_simulator --mode consumer
+```
+
+Running with `python -m` is recommended for scripts inside the `scripts/` package. Alternatively, if you must run the `.py` file directly, run it from the repository root so imports work (less robust).
+
 ### Slides
 
 Slides are stored under `docs/slides/`.

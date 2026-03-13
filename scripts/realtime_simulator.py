@@ -5,9 +5,19 @@ real-time telemetry events and a consumer that receives events from an
 asyncio.Queue and writes them into a rolling JSONL file. This is a sketch
 intended as a starting point for a real Kafka/Redis consumer.
 
-Usage:
-    python scripts/realtime_simulator.py --mode producer  # run producer
-    python scripts/realtime_simulator.py --mode consumer  # run consumer
+Run as a module (recommended):
+
+```bash
+python -m scripts.realtime_simulator --mode demo --run-time 10
+```
+
+Running via `python -m` ensures the repository root is importable and avoids
+sys.path hacks when the script depends on in-repo packages (for example
+`app.config`).
+
+Usage (module form):
+    python -m scripts.realtime_simulator --mode producer  # run producer
+    python -m scripts.realtime_simulator --mode consumer  # run consumer
 
 The producer periodically puts JSON events onto an in-memory queue (only
 when run as a combined demo). The consumer shows how you would parse events
@@ -24,19 +34,7 @@ import string
 import time
 from pathlib import Path
 
-# Prefer the canonical data directory from app.config when available.
-try:
-    from app.config import DATA_DIR as CONFIG_DATA_DIR
-except Exception:
-    CONFIG_DATA_DIR = None
-
-if CONFIG_DATA_DIR is not None:
-    OUTPUT_DIR = Path(CONFIG_DATA_DIR)
-else:
-    OUTPUT_DIR = Path("data_generator/output")
-
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-STREAM_FILE = OUTPUT_DIR / "realtime_stream.jsonl"
+from app.config import REALTIME_STREAM_FILE as STREAM_FILE
 
 
 def random_event():

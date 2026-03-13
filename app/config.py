@@ -18,6 +18,18 @@ DATA_DIR = Path(os.getenv("DATA_DIR", BASE_DIR / "data_generator" / "output"))
 LOG_PATH = DATA_DIR / "telemetry_logs.jsonl"
 EMPLOYEE_PATH = DATA_DIR / "employees.csv"
 
+# Ensure the data directory exists when the config is loaded. This makes it
+# convenient for scripts that rely on the path being present (tests or demos).
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    # Best-effort: if the directory cannot be created (permissions etc.),
+    # leave it to the caller to handle. We don't raise here to keep imports safe.
+    pass
+
+# Realtime simulator / stream file
+REALTIME_STREAM_FILE = DATA_DIR / "realtime_stream.jsonl"
+
 DEFAULT_EVENT_LIMIT = 100
 
 CHUNK_SIZE = 10_000_000  # adjust based on memory
