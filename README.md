@@ -1,16 +1,10 @@
 # Analytics Platform
 [![CI](https://github.com/mrprogrammingx/analytics-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mrprogrammingx/analytics-platform/actions/workflows/ci.yml)
-
-An end-to-end Claude Code usage analytics platform. This repository contains:
-
-- A small telemetry fake-data generator (for local testing).
-- An ingestion script that parses telemetry JSONL and writes normalized tables into a local DuckDB file (`analytics.db`).
-- A Streamlit dashboard for interactive analytics and ad-hoc SQL queries.
-
----
-
 ## Quick start (3 minutes, recommended)
-1. Create and activate a virtualenv (recommended):
+
+Choose one of the two workflows below — Quick start (fast, opinionated) or Manual start (step-by-step). You only need to follow one.
+
+1) Prepare a virtual environment (required for either workflow):
 
 ```bash
 python -m venv .venv
@@ -20,67 +14,74 @@ python -m pip install -r requirements.txt
 python -m pip install -r requirements-dev.txt
 ```
 
-2. Run the full pipeline (recommended):
+2) Quick start (recommended): run the full pipeline end-to-end:
 
 ```bash
 bash scripts/run_pipeline.sh --generate
 ```
-This will:
-- Generate sample telemetry data
-- Run the ingestion pipeline
-- Start the Streamlit dashboard
 
-If the sample data already exists and you only want to ingest + start the dashboard:
+What this does:
+- Generate sample telemetry data (writes to `data_generator/output`)
+- Run ingestion to populate `analytics.db`
+- Launch the Streamlit dashboard
 
-### Populate the DuckDB analytics database by running the ingestion script:
+If you already have sample files in `data_generator/output` and only want to ingest + start the dashboard, run:
+
 ```bash
-# Run the pipeline but skip data generation (use existing data in data_generator/output)
 bash scripts/run_pipeline.sh --no-generate
 ```
-python -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
+
+Advanced: run ingestion directly if you want more control over paths or chunk size:
+
 ```bash
-python3 -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
+python -m ingestion.parse_logs \
+	--log-path data_generator/output/telemetry_logs.jsonl \
+	--employee-path data_generator/output/employees.csv \
+	--db-path analytics.db \
+	--chunk-size 500
 ```
 
-Note: the ingestion script reads from a data directory defined in `ingestion/parse_logs.py` (default: `data_generator/output`). The generator creates that output folder and files automatically, so there's no need to copy files between directories.
+Note: `ingestion.parse_logs` defaults to `data_generator/output` (see `ingestion/parse_logs.py`). The generator creates that folder automatically.
 
-The Streamlit dashboard will start automatically.  
-Open the local URL printed by Streamlit (usually http://localhost:8501).
+When the dashboard starts, open the URL printed by Streamlit (usually http://localhost:8501).
 
 ---
-## Manual start (Optional)
 
+## Manual start (detailed)
+
+Follow these steps if you prefer to run each stage explicitly.
+
+1) Create and activate a virtual environment (same as Quick start):
+
+```bash
 python -m venv .venv
-
-```bash
-python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 ```
 
-2. Generate sample telemetry + employees data (required before ingestion):
+2) Generate sample telemetry + employees data (writes to `data_generator/output`):
+
+```bash
 python -m data_generator.generate_fake_data
-```bash
-# This script writes sample files into data_generator/output
-python3 -m data_generator.generate_fake_data
 ```
 
+3) Run ingestion to populate the DuckDB file (`analytics.db`):
+
+```bash
 python -m ingestion.parse_logs
-
-```bash
-python3 -m ingestion.parse_logs
 ```
 
-Note: the ingestion script reads from a data directory defined in `ingestion/parse_logs.py` (default: `data_generator/output`). The generator creates that output folder and files automatically, so there's no need to copy files between directories.
+You can pass the same advanced flags shown in the Quick start example to control paths or chunk size.
 
-4. Start the Streamlit dashboard:
+4) Start the Streamlit dashboard:
 
 ```bash
-# recommended: run the app from the dashboard package
 streamlit run dashboard/main.py
 ```
 
-Open the local URL printed by Streamlit (usually http://localhost:8501).
+Open the URL printed by Streamlit (usually http://localhost:8501).
 
 ---
 
@@ -88,53 +89,39 @@ Open the local URL printed by Streamlit (usually http://localhost:8501).
 ```
 analytics-platform
 │
-├── app
-│   └── config.py                 # configs for the app
-│
-├── api
-│   └── server.py                # FastAPI service exposing analytics endpoints
-│
-├── data_generator
-│   ├── generate_fake_data.py    # Generates simulated telemetry data
-│   └── output/                  # Generated JSONL logs and employees CSV
-│
-├── ingestion
-│   └── parse_logs.py            # Parses telemetry logs and loads DuckDB
-│
-├── dashboard
-│   └── main.py                   # Streamlit analytics dashboard
-│
-├── scripts
-│   └── run_pipeline.sh          # Runs full pipeline (generate → ingest)
-│
-├── tests
-│   └── test_ingest_helpers.py    # unit tests (pytest)
-│
-├── analytics.db                 # DuckDB analytics database
-├── requirements.txt             # Python dependencies
-├── requirements-dev.txt         # Python development dependencies
-├── pyproject.toml              # the standard configuration file for modern Python projects
-├── .gitignore                   # Ignore files and folder for pushing to git
-├── .github
-│   └── workflows
-│       └── ci.yml               # GitHub Actions workflow (CI)
-│
-├── .pre-commit-config.yaml      # pre-commit hooks configuration (black/ruff/isort)
-├── README.md                    # Project documentation
-└── docs/
-	├── LLM_USAGE_LOG.md        # (Optional) Log of AI tools and prompts used
-	└── LLM_USAGE.md            # Summary of LLM usage
+├── app/                         # application config & helpers
+├── api/                         # FastAPI endpoints (api/server.py)
+├── data_generator/              # fake-data generator and sample output
+├── ingestion/                   # ingestion pipeline (parse_logs.py)
+├── dashboard/                   # Streamlit dashboard
+├── scripts/                     # helper scripts (run_pipeline.sh, demo.sh)
+├── tests/                       # pytest unit/integration tests
+├── analytics.db                 # DuckDB analytics database (optional/sample)
+├── requirements.txt
+├── requirements-dev.txt
+├── pyproject.toml
+├── .pre-commit-config.yaml
+├── README.md
+└── docs/                        # project docs, LLM usage logs, slides
+		├── LLM_USAGE_LOG.md
+		├── LLM_USAGE.md
+		└── slides/
+				└── insights.md
 ```
 
 ## What each piece does
 
-- `data_generator/generate_fake_data.py` — creates a small set of telemetry JSONL and an `employees.csv` so you can exercise the ingestion and dashboard without real logs.
-- `ingestion/parse_logs.py` — reads the JSONL, normalizes nested fields (turns dotted keys into underscored columns), coerces numeric fields, computes `ts` (datetime) and `total_tokens`, and writes two DuckDB tables: `telemetry_events` and `employees` in `analytics.db`.
-- `dashboard/main.py` — interactive dashboard that reads aggregates from `analytics.db`, offers common pre-made queries and a safe custom-SQL editor (preview mode with LIMIT + cached results).
-- `scripts/run_pipeline.sh` — convenience pipeline script that orchestrates the full workflow: optionally generates fake telemetry data, runs the ingestion script to populate `analytics.db`, and launches the Streamlit dashboard.
-- `api/server.py` — The platform also exposes a lightweight REST API for programmatic access to the analytics data.
-- `app/config.py` - Central configuration (paths, constants, settings)
----
+Below is a short, non-redundant summary of the project's main components. See the "Project structure" section above for exact paths.
+
+- data_generator — Fake-data generator that writes sample telemetry JSONL and an `employees.csv` to `data_generator/output`.
+- ingestion — ETL pipeline that parses the JSONL, normalizes nested fields, computes timestamps/derived columns, and writes the DuckDB tables (`telemetry_events`, `employees`). See `ingestion/parse_logs.py`.
+- dashboard — Streamlit app (`dashboard/main.py`) for interactive exploration, common aggregates, and a safe custom-SQL preview mode.
+- api — FastAPI service (`api/server.py`) exposing programmatic endpoints (events, metrics, users, analytics).
+- app/config.py — Central configuration (paths, constants, settings) used by other components.
+- scripts — Convenience scripts (`scripts/run_pipeline.sh`, `scripts/demo.sh`) to generate data, run ingestion, and launch the demo.
+
+If you prefer a single place to look, the "Project structure" section above lists these components and their primary locations.
+
 
 ## API Access
 
