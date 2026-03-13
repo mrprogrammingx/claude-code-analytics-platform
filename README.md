@@ -189,6 +189,17 @@ Response:
 - If Streamlit segfaults or crashes intermittently, make sure the app is using short-lived DuckDB connections (the current `dashboard/main.py` uses read-only connections per query).
 
 ---
+
+## Continuous Integration (CI) notes
+
+Small details about the repository CI that are helpful when troubleshooting CI failures or updating workflow files:
+
+- Notebook execution: the CI runs `jupyter nbconvert --execute` to run `notebooks/predictive_example.ipynb`. The runner doesn't have a Jupyter kernelspec by default, so the workflow installs `ipykernel` and registers a kernel named `python3` before executing the notebook. If you modify CI notebook steps, keep that kernel registration in place or adjust `--ExecutePreprocessor.kernel_name` accordingly.
+
+- Artifact uploads: the workflow uploads the executed notebook as an artifact. Because the CI runs a matrix of Python versions, artifact uploads include the matrix `python-version` in the artifact name (for example `executed-notebook-3.11`) to avoid conflicts where multiple jobs upload an artifact with the same name.
+
+- Node.js runtime for actions: some GitHub Actions still run on Node.js 20 and GitHub will switch the default Node.js to 24 in the future. The workflow currently opts in to Node.js 24 by setting `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` at the workflow level to avoid deprecation warnings; update or remove this as needed when the actions you use are updated.
+
 ### Code style
 
 This project uses:
