@@ -111,8 +111,13 @@ analytics-platform
 ├── analytics.db                 # DuckDB analytics database
 ├── requirements.txt             # Python dependencies
 ├── requirements-dev.txt         # Python development dependencies
-├── pyproject.toml.              # the standard configuration file for modern Python projects
+├── pyproject.toml              # the standard configuration file for modern Python projects
 ├── .gitignore                   # Ignore files and folder for pushing to git
+├── .github
+│   └── workflows
+│       └── ci.yml               # GitHub Actions workflow (CI)
+│
+├── .pre-commit-config.yaml      # pre-commit hooks configuration (black/ruff/isort)
 ├── README.md                    # Project documentation
 └── LLM_USAGE_LOG.md             # (Optional) Log of AI tools and prompts used
 ```
