@@ -1,2 +1,1 @@
-"""Streamlit dashboard package.
-"""
+"""Streamlit dashboard package."""

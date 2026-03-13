@@ -32,7 +32,6 @@ import json
 import random
 import string
 import time
-from pathlib import Path
 
 from app.config import REALTIME_STREAM_FILE as STREAM_FILE
 

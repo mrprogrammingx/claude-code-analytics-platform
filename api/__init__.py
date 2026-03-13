@@ -1,2 +1,1 @@
-"""API package for the analytics platform.
-"""
+"""API package for the analytics platform."""
