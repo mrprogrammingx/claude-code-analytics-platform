@@ -13,7 +13,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from app.config import DB_PATH, MODEL_PATH, MODEL_CODE_MAP
+from app.config import DB_PATH, MODEL_CODE_MAP, MODEL_PATH
 
 # Simple mapping used by the trainer's synthetic data. If you change the
 # training pipeline to persist category mappings, update this mapping or

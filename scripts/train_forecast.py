@@ -11,7 +11,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from app.config import DB_PATH as CFG_DB_PATH, MODELS_DIR, MODEL_PATH
+from app.config import DB_PATH as CFG_DB_PATH
+from app.config import MODEL_PATH, MODELS_DIR
 
 try:
     from sklearn.ensemble import RandomForestRegressor
