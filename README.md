@@ -143,6 +143,11 @@ Interactive documentation is available at:
 
 http://localhost:8000/docs
 
+OpenAPI / Swagger UI
+
+- Interactive API docs (FastAPI OpenAPI): http://localhost:8000/docs
+
+
 ## Tips for speed & stability
 
 - The ingestion script currently loads events into memory. For large datasets, process the JSONL in streaming/batched mode and append into DuckDB to avoid OOM.
