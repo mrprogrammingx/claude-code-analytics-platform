@@ -4,3 +4,4 @@ black
 isort
 pre-commit
 httpx
+scikit-learn
