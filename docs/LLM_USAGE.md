@@ -1,3 +1,10 @@
+ (See LLM_USAGE_LOG.md for the original detailed prompt log.)
+
+## LLM Usage (summary)
+
+This project used Claude, Copilot and ChatGPT for architecture sketches, helper code, and documentation.
+
+See `LLM_USAGE_LOG.md` for the detailed log of prompts and outputs.
 # LLM Usage
 
 This project followed an AI-first workflow to accelerate development. The notes below summarize which LLMs were used, why they were used, sample prompts, and how the outputs were validated.

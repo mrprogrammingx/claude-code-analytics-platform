@@ -121,7 +121,9 @@ analytics-platform
 │
 ├── .pre-commit-config.yaml      # pre-commit hooks configuration (black/ruff/isort)
 ├── README.md                    # Project documentation
-└── LLM_USAGE_LOG.md             # (Optional) Log of AI tools and prompts used
+└── docs/
+	├── LLM_USAGE_LOG.md        # (Optional) Log of AI tools and prompts used
+	└── LLM_USAGE.md            # Summary of LLM usage
 ```
 
 ## What each piece does
@@ -251,6 +253,7 @@ If pre-commit reformats files, add and commit the changes before pushing so CI s
 ### LLM Usage
 
 A detailed log of how AI tools were used in this project is available in the [`LLM_USAGE_LOG.md`](LLM_USAGE_LOG.md) file.  
+A detailed log of how AI tools were used in this project is available in the [`docs/LLM_USAGE_LOG.md`](docs/LLM_USAGE_LOG.md) file.  
 
 ## Demo script & Docker
 
