@@ -6,13 +6,12 @@ fallback. The trained model is persisted using joblib to `models/forecast.joblib
 """
 
 import pickle
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from app.config import DB_PATH as CFG_DB_PATH
-from app.config import MODEL_PATH, MODELS_DIR
+from app.config import MODEL_PATH
 
 try:
     from sklearn.ensemble import RandomForestRegressor

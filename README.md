@@ -178,10 +178,10 @@ Response:
 The repository includes a tiny trainer used by the demo notebook and examples: `scripts/train_forecast.py`.
 
 What it does:
-- Loads a sample of telemetry events from `analytics.db` (if present) or falls back to a synthetic dataset.
+- Loads a sample of telemetry events from the DuckDB file (default `analytics.db`) or falls back to a synthetic dataset. The canonical path is configurable via the `DB_PATH` environment variable or `app.config.DB_PATH` in code.
 - Featurizes `prompt_length` and `model` (the script maps `model` to a categorical code).
 - Trains either a scikit-learn RandomForestRegressor (if `scikit-learn` is installed) or a simple linear least-squares fallback.
-- Persists the model to `models/forecast.joblib` (joblib if available, otherwise pickle).
+ - Persists the model to `models/forecast.joblib` by default. The path is configurable via the `MODELS_DIR` / `MODEL_PATH` in `app.config` or the `MODELS_DIR` env var.
 
 Run the trainer from the repository root (recommended inside your virtualenv):
 
@@ -190,8 +190,7 @@ python -m scripts.train_forecast
 ```
 
 Result:
-- The trained model file is written to `models/forecast.joblib`.
-- The demo notebook and the API expect the model at that path. If you run the trainer locally, the API `/predict` endpoint will use the persisted model when available.
+ - The trained model file is written to the configured `MODEL_PATH` (defaults to `models/forecast.joblib`). The demo notebook and the API read the model from the same `MODEL_PATH` so training and serving remain consistent. You can override the location with the `MODELS_DIR` environment variable when running the trainer or the API.
 
 Notes:
 - Install scikit-learn and joblib in your virtualenv to get a RandomForest model and a joblib-persisted file:

@@ -50,7 +50,7 @@ else
 fi
 
 echo "Running ingestion pipeline..."
-python -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
+python -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path "${DB_PATH:-analytics.db}" --chunk-size 500
 
 echo "Starting analytics dashboard..."
 # use exec so the dashboard process inherits the PID (nice for ctrl-c)

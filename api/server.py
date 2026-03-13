@@ -2,7 +2,6 @@ import logging
 import pickle
 from decimal import Decimal
 from functools import lru_cache
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import duckdb
