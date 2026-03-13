@@ -147,6 +147,32 @@ OpenAPI / Swagger UI
 
 - Interactive API docs (FastAPI OpenAPI): http://localhost:8000/docs
 
+## Predict via the API
+
+Start the API:
+
+```bash
+uvicorn api.server:app --reload
+```
+
+Send a POST to http://127.0.0.1:8000/predict with JSON:
+
+```json
+{"prompt_length": 120, "model": "claude-v1"}
+```
+
+or
+
+```json
+{"prompt_length": 120, "model_code": 0}
+```
+
+Response:
+
+```json
+{"prediction": <float>}
+```
+
 
 ## Tips for speed & stability
 
@@ -290,5 +316,32 @@ Running with `python -m` is recommended for scripts inside the `scripts/` packag
 ### Slides
 
 Slides are stored under `docs/slides/`.
-```bash
+
+
+## Architecture (brief)
+
+Data flows from generators (or real sources simulation) into the ingestion pipeline which
+normalizes and writes structured tables into a DuckDB file (`analytics.db`).
+The Streamlit dashboard and FastAPI service query DuckDB using short-lived
+connections; analytic queries and ad-hoc SQL feed the dashboard widgets and
+API endpoints. Optional components include a realtime producer/consumer that
+appends to a JSONL staging file and a small ML workflow for forecasting.
+
+```
+### Deliverables checklist
+
+The repository contains the following deliverables for submission:
+
+- Source code (this repo) with commit history
+- `README.md` (this file) with setup & run instructions
+- `analytics.db` (sample DuckDB file, optional)
+- `notebooks/predictive_example.ipynb` — toy forecasting notebook
+- `docs/LLM_USAGE_LOG.md` — LLM usage log
+- `docs/slides/insights.md` — short insights slides
+- `scripts/realtime_simulator.py` — realtime producer/consumer sketch
+- `scripts/train_forecast.py` — small forecasting trainer that persists a model
+- `api/server.py` — FastAPI endpoints (including `/predict`)
+
+If you include an insights PDF or demo video, add links or files under `docs/`.
+
 

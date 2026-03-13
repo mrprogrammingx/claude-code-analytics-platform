@@ -55,3 +55,14 @@ jobs:
       - name: Run tests
         run: |
           pytest -q
+
+      - name: Execute predictive notebook
+        run: |
+          python -m pip install nbconvert
+          jupyter nbconvert --to notebook --execute notebooks/predictive_example.ipynb --ExecutePreprocessor.timeout=120 --output notebooks/predictive_example-executed.ipynb
+
+      - name: Upload executed notebook
+        uses: actions/upload-artifact@v4
+        with:
+          name: executed-notebook
+          path: notebooks/predictive_example-executed.ipynb

@@ -6,11 +6,23 @@ from typing import Any, Dict, List, Optional
 import duckdb
 import numpy as np
 import pandas as pd
+import pickle
+from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from fastapi import Body
+from pydantic import BaseModel, Field
 
 from app.config import DB_PATH
+
+# model persistence path (trained by scripts/train_forecast.py)
+MODEL_PATH = Path("models") / "forecast.joblib"
+
+# Simple mapping used by the trainer's synthetic data. If you change the
+# training pipeline to persist category mappings, update this mapping or
+# load the mapping from disk. This is a reasonable default for the demo.
+MODEL_CODE_MAP = {"claude-v1": 0, "claude-instant": 1, "gpt-4": 2}
 
 app = FastAPI(title="Claude Telemetry Analytics API")
 logger = logging.getLogger("api.server")
@@ -226,3 +238,112 @@ def get_telemetry(limit: int = Query(100, ge=1, le=10000)):
     # Return JSONResponse (duckdb DataFrame converted to python objects)
     df_records = exec_query("SELECT * FROM telemetry_events LIMIT ?", params=[limit])
     return JSONResponse(content=df_records)
+
+
+@lru_cache(maxsize=1)
+def _load_model():
+    """Load persisted model from disk. Returns a tuple (kind, obj).
+
+    kind is one of 'sklearn' or 'linear'. The function will try joblib first
+    (common for scikit-learn), then fall back to pickle. On failure, raises
+    HTTPException(500).
+    """
+    if not MODEL_PATH.exists():
+        raise HTTPException(status_code=404, detail="model not found; run scripts/train_forecast.py to create one")
+    # prefer joblib when available
+    try:
+        import joblib
+
+        m = joblib.load(MODEL_PATH)
+        return "sklearn", m
+    except Exception:
+        # try generic pickle load
+        try:
+            with open(MODEL_PATH, "rb") as f:
+                m = pickle.load(f)
+            # numpy linear model persisted as {'coef': [...]}
+            if isinstance(m, dict) and "coef" in m:
+                return "linear", np.array(m["coef"])
+            return "sklearn", m
+        except Exception as e:
+            logger.exception("Failed to load persisted model")
+            raise HTTPException(status_code=500, detail=f"failed to load model: {e}")
+
+
+@app.post("/predict")
+class PredictRequest(BaseModel):
+    # Provide sensible defaults so Swagger UI and the request body are prefilled
+    prompt_length: int = Field(120, description="Length of the prompt in tokens")
+    model: Optional[str] = Field("claude-v1", description="Model name (optional)")
+    model_code: Optional[int] = Field(0, description="Numeric encoded model category (optional)")
+
+
+class PredictResponse(BaseModel):
+    prediction: float
+
+
+@app.post("/predict", response_model=PredictResponse)
+def predict(
+    payload: Optional[PredictRequest] = Body(
+        None,
+        examples={
+            "example": {
+                "summary": "Predict example",
+                "value": {"prompt_length": 120, "model": "claude-v1"},
+            }
+        },
+    ),
+    prompt_length: Optional[int] = Query(120, description="Prompt length (alternative to body)"),
+    model: Optional[str] = Query("claude-v1", description="Model name (alternative to body)"),
+    model_code: Optional[int] = Query(0, description="Model code (alternative to body)"),
+):
+    # Accept either a JSON body or query parameters for convenience.
+    if payload is not None:
+        pl = payload.prompt_length
+        model_name = payload.model
+        model_code = payload.model_code
+    else:
+        pl = prompt_length
+        model_name = model
+        # model_code from query overrides model mapping
+        model_code = model_code
+
+    if pl is None:
+        raise HTTPException(status_code=422, detail="missing 'prompt_length' field")
+
+    try:
+        pl = int(pl)
+    except Exception:
+        raise HTTPException(status_code=422, detail="'prompt_length' must be an integer")
+
+    if model_code is None:
+        if model_name is None:
+            model_code = 0
+        else:
+            model_code = MODEL_CODE_MAP.get(model_name)
+            if model_code is None:
+                raise HTTPException(status_code=422, detail=f"unknown model '{model_name}'")
+
+    kind, model = _load_model()
+    X = np.array([[pl, model_code]])
+    try:
+        if kind == "sklearn":
+            pred = model.predict(X)
+            if hasattr(pred, "item"):
+                pred = float(pred.item())
+            else:
+                pred = float(pred[0])
+        elif kind == "linear":
+            coef = model
+            xb = np.array([1.0, float(pl), float(model_code)])
+            pred = float(np.dot(xb, coef))
+        else:
+            raise HTTPException(status_code=500, detail="unsupported model type")
+    except Exception as e:
+        logger.exception("prediction failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not np.isfinite(pred):
+        raise HTTPException(status_code=500, detail="prediction is not finite")
+
+    return PredictResponse(prediction=float(pred))
