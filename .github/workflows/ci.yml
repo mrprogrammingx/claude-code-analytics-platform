@@ -1,5 +1,9 @@
 name: CI
 
+# Opt into Node.js 24 for actions that still run on Node 20 (prevents deprecation warnings)
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 on:
   workflow_dispatch:
   push:
@@ -84,5 +88,6 @@ jobs:
       - name: Upload executed notebook
         uses: actions/upload-artifact@v4
         with:
-          name: executed-notebook
+          # include the python version from the matrix to avoid artifact name collisions
+          name: executed-notebook-${{ matrix.python-version }}
           path: notebooks/predictive_example-executed.ipynb
