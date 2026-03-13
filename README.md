@@ -274,3 +274,8 @@ docker run --rm -p 8501:8501 -p 8000:8000 analytics-platform:latest
 
 Note: pre-generating data during image build increases build time and image size. If you prefer a minimal image, remove the pre-generation `RUN` steps in the `Dockerfile` and run `demo.sh` inside the container instead.
 
+### Slides
+
+Slides are stored under `docs/slides/`.
+```bash
+
