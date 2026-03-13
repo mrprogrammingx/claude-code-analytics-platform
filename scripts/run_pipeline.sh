@@ -43,15 +43,15 @@ if [ "$GENERATE" = true ]; then
   echo "Generating telemetry data..."
   (
     cd data_generator
-    python3 generate_fake_data.py --num-users 100 --num-sessions 5000 --days 60
+  python generate_fake_data.py --num-users 100 --num-sessions 5000 --days 60
   )
 else
   echo "Skipping data generation"
 fi
 
 echo "Running ingestion pipeline..."
-python3 -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
+python -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
 
 echo "Starting analytics dashboard..."
 # use exec so the dashboard process inherits the PID (nice for ctrl-c)
-exec python3 -m streamlit run dashboard/main.py
+exec python -m streamlit run dashboard/main.py

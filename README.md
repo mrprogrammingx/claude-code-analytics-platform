@@ -13,7 +13,7 @@ An end-to-end Claude Code usage analytics platform. This repository contains:
 1. Create and activate a virtualenv (recommended):
 
 ```bash
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install -r requirements.txt
@@ -37,7 +37,7 @@ If the sample data already exists and you only want to ingest + start the dashbo
 # Run the pipeline but skip data generation (use existing data in data_generator/output)
 bash scripts/run_pipeline.sh --no-generate
 ```
-Or run the ingestion step directly with explicit paths:
+python -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
 ```bash
 python3 -m ingestion.parse_logs --log-path data_generator/output/telemetry_logs.jsonl --employee-path data_generator/output/employees.csv --db-path analytics.db --chunk-size 500
 ```
@@ -50,7 +50,7 @@ Open the local URL printed by Streamlit (usually http://localhost:8501).
 ---
 ## Manual start (Optional)
 
-1. Create and activate a virtualenv (recommended):
+python -m venv .venv
 
 ```bash
 python3 -m venv .venv
@@ -59,13 +59,13 @@ pip install -r requirements.txt
 ```
 
 2. Generate sample telemetry + employees data (required before ingestion):
-
+python -m data_generator.generate_fake_data
 ```bash
 # This script writes sample files into data_generator/output
 python3 -m data_generator.generate_fake_data
 ```
 
-3. Populate the DuckDB analytics database by running the ingestion script:
+python -m ingestion.parse_logs
 
 ```bash
 python3 -m ingestion.parse_logs
