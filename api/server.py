@@ -57,7 +57,8 @@ def exec_query(sql: str, params: Optional[List[Any]] = None, to_dict: bool = Tru
             # Avoid DataFrame.applymap (deprecated); use Series.map where appropriate.
 
             def _convert_series(s: pd.Series) -> pd.Series:
-                # For object dtype (dicts, nested blobs) keep as-is but sanitize scalars inside later
+                # For object dtype (dicts, nested blobs)
+                # keep as-is but sanitize scalars inside later
                 if s.dtype == "object":
 
                     def _conv_obj(v):

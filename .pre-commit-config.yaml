@@ -12,7 +12,7 @@ repos:
 
       - id: ruff
         name: ruff (system)
-        entry: ruff
+        entry: ruff check
         language: system
         types: [python]
 
