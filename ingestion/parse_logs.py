@@ -28,7 +28,7 @@ it handles both string and dict forms.
 - Numeric casting is best-effort — invalid values become NULL.
 
 Quick usage:
-    python3 -m ingestion.parse_logs
+    python -m ingestion.parse_logs
 
 If you want to re-run on a larger dataset, consider:
 - Increasing available memory, or
