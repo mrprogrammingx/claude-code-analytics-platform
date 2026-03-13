@@ -173,6 +173,36 @@ Response:
 {"prediction": <float>}
 ```
 
+## Training / Forecasting
+
+The repository includes a tiny trainer used by the demo notebook and examples: `scripts/train_forecast.py`.
+
+What it does:
+- Loads a sample of telemetry events from `analytics.db` (if present) or falls back to a synthetic dataset.
+- Featurizes `prompt_length` and `model` (the script maps `model` to a categorical code).
+- Trains either a scikit-learn RandomForestRegressor (if `scikit-learn` is installed) or a simple linear least-squares fallback.
+- Persists the model to `models/forecast.joblib` (joblib if available, otherwise pickle).
+
+Run the trainer from the repository root (recommended inside your virtualenv):
+
+```bash
+python -m scripts.train_forecast
+```
+
+Result:
+- The trained model file is written to `models/forecast.joblib`.
+- The demo notebook and the API expect the model at that path. If you run the trainer locally, the API `/predict` endpoint will use the persisted model when available.
+
+Notes:
+- Install scikit-learn and joblib in your virtualenv to get a RandomForest model and a joblib-persisted file:
+
+```bash
+python -m pip install scikit-learn joblib
+```
+
+- If `analytics.db` doesn't exist, the trainer will synthesize data so you can still create a model for the demo.
+
+
 
 ## Tips for speed & stability
 
