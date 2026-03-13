@@ -15,7 +15,9 @@ An end-to-end Claude Code usage analytics platform. This repository contains:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 ```
 
 2. Run the full pipeline (recommended):
@@ -200,13 +202,13 @@ Unit tests live under the `tests/` directory and use `pytest`.
 1. Install development dependencies (recommended inside your virtualenv):
 
 ```bash
-pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt
 ```
 
 2. Run the full test suite:
 
 ```bash
-pytest -q
+python -m pytest -q
 ```
 
 3. Run a single test file or test function:
@@ -222,9 +224,8 @@ The CI (if enabled) will run the same test commands on push/PR. If you discover 
 To avoid CI failures after push, install `pre-commit` and enable the local hooks. These hooks run `black`, `ruff`, and `isort` on each commit.
 
 1. Install pre-commit (in your virtualenv):
-
 ```bash
-pip install pre-commit
+python -m pip install pre-commit
 ```
 
 2. Install the git hooks:
@@ -233,13 +234,13 @@ pip install pre-commit
 pre-commit install
 ```
 
-3. Optionally run the hooks over all files once:
+3. Optionally run the hooks over all files once (this may modify files):
 
 ```bash
-pre-commit run --all-files
+pre-commit run --all-files -v
 ```
 
-This will automatically format and lint files locally before commits so CI is less likely to fail.
+If pre-commit reformats files, add and commit the changes before pushing so CI sees the same tree.
 
 ## Development notes
 
