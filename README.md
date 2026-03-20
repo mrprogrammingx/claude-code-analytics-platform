@@ -310,8 +310,12 @@ If pre-commit reformats files, add and commit the changes before pushing so CI s
 
 ### LLM Usage
 
-A detailed log of how AI tools were used in this project is available in the [`LLM_USAGE_LOG.md`](LLM_USAGE_LOG.md) file.  
-A detailed log of how AI tools were used in this project is available in the [`docs/LLM_USAGE_LOG.md`](docs/LLM_USAGE_LOG.md) file.  
+Two related documents live under the `docs/` directory:
+
+- [`docs/LLM_USAGE.md`](docs/LLM_USAGE.md) — a short explanation and guidelines about how AI tools were used in this project.
+- [`docs/LLM_USAGE_LOG.md`](docs/LLM_USAGE_LOG.md) — a detailed chronological log of prompts, responses, and actions taken while using AI tools during development.
+
+See those files in the `docs/` directory for details.
 
 ## Demo script & Docker
 
