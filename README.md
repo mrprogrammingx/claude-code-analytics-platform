@@ -1,4 +1,4 @@
-# Analytics Platform
+# Claude Code Analytics Platform
 [![CI](https://github.com/mrprogrammingx/analytics-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mrprogrammingx/analytics-platform/actions/workflows/ci.yml)
 ## Quick start (3 minutes, recommended)
 
