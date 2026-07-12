@@ -43,9 +43,17 @@ python -m ingestion.parse_logs \
 
 Note: `ingestion.parse_logs` defaults to `data_generator/output` (see `ingestion/parse_logs.py`). The generator creates that folder automatically.
 
+## Manual start (detailed)
+
 When the dashboard starts, open the URL printed by Streamlit (usually http://localhost:8501).
 
 ---
+
+## Screenshot
+
+The Streamlit dashboard (interactive analytics UI):
+
+![Streamlit dashboard screenshot](docs/screenshots/home-screenshot.png)
 
 ## Manual start (detailed)
 
